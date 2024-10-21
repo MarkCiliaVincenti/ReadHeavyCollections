@@ -33,7 +33,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <summary>
     /// Creates an empty <see cref="ReadHeavyDictionary{TKey, TValue}"/>.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavyDictionary()
     {
         _isComparerSet = false;
@@ -161,7 +161,11 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <summary>
     /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.Count"/>
     /// </summary>
-    public int Count => _frozenDictionary.Count;
+    public int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Count;
+    }
 
     bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
 
@@ -278,16 +282,32 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <summary>
     /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.Keys"/>
     /// </summary>
-    public ICollection<TKey> Keys => _frozenDictionary.Keys;
+    public ICollection<TKey> Keys
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Keys;
+    }
 
     /// <summary>
     /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.Values"/>
     /// </summary>
-    public ICollection<TValue> Values => _frozenDictionary.Values;
+    public ICollection<TValue> Values
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Values;
+    }
 
-    IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _frozenDictionary.Keys;
+    IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Keys;
+    }
 
-    IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _frozenDictionary.Values;
+    IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Values;
+    }
 
     /// <summary>
     /// <inheritdoc />
@@ -329,9 +349,17 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
 
     bool IDictionary.IsReadOnly => false;
 
-    ICollection IDictionary.Keys => _frozenDictionary.Keys;
+    ICollection IDictionary.Keys
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Keys;
+    }
 
-    ICollection IDictionary.Values => _frozenDictionary.Values;
+    ICollection IDictionary.Values
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Values;
+    }
 
     object IDictionary.this[object key]
     {
@@ -348,10 +376,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullException.ThrowIfNull(key);
 
             try
             {
@@ -375,10 +400,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IDictionary.Add(object key, object value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         try
         {
@@ -441,6 +463,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <inheritdoc />
     /// </summary>
     /// <param name="sender"><inheritdoc /></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnDeserialization(object sender)
     {
         lock (_lock)
