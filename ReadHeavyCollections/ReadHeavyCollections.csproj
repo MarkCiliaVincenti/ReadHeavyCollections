@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net9.0</TargetFrameworks>
+		<Authors>Mark Cilia Vincenti</Authors>
+		<RepositoryUrl>https://github.com/MarkCiliaVincenti/AsyncKeyedLock.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/MarkCiliaVincenti/AsyncKeyedLock</PackageProjectUrl>
+		<Copyright>MIT</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Version>0.0.1-alpha</Version>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+		<Description>A dictionary that offers very fast read speed in expense of slow write speed.</Description>
+		<Copyright>© 2024 Mark Cilia Vincenti</Copyright>
+		<PackageTags>dictionary,read,heavy,fast</PackageTags>
+		<RepositoryType>git</RepositoryType>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<AssemblyVersion>0.0.1.0</AssemblyVersion>
+		<FileVersion>0.0.1.0</FileVersion>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<IsPackable>true</IsPackable>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<AnalysisLevel>latest</AnalysisLevel>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>ReadHeavyCollections.snk</AssemblyOriginatorKeyFile>
+		<CheckEolTargetFramework>false</CheckEolTargetFramework>
+		<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(DefineConstants.Contains(AOT_COMPATIBLE))">
+		<IsAotCompatible>true</IsAotCompatible>
+		<PublishAot>true</PublishAot>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(DefineConstants.Contains(TRIMMING_COMPATIBLE))">
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimmerDefaultAction>link</TrimmerDefaultAction>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<Optimize>true</Optimize>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\CONTRIBUTORS.md">
+			<Pack>False</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Backport.System.Threading.Lock" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))" />
+		<PackageReference Include="System.Collections.Immutable" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" />
+	</ItemGroup>
+
+</Project>
