@@ -15,7 +15,7 @@ using System.Threading;
 namespace ReadHeavyCollections;
 
 /// <summary>
-/// Represents a collection of keys and value that is highly optimized for read but performs poorly in write operations.
+/// Represents a collection of keys and values that is highly optimized for read but performs poorly in write operations.
 /// </summary>
 /// <typeparam name="TKey">The non-nullable type for the keys.</typeparam>
 /// <typeparam name="TValue">The type for the values.</typeparam>

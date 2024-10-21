@@ -17,9 +17,11 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-            8.0.x
-            9.0.x
+        dotnet-version: 9.0.x
+        
+    - name: New global.json
+      run: dotnet new globaljson
+      working-directory: Benchmarks        
         
     - name: Restore dependencies
       run: dotnet restore
@@ -32,3 +34,7 @@ jobs:
       
     - name: Coverage
       uses: codecov/codecov-action@v3
+      
+    - name: Run benchmark
+      run: dotnet run --framework net9.0 --configuration Release --exporters json --filter '*'
+      working-directory: Benchmarks
