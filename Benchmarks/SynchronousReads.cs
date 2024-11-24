@@ -8,7 +8,7 @@ namespace Benchmarks;
 [MemoryDiagnoser]
 public class SynchronousReads
 {
-    [Params(10, 100, 1000, 10000, 100000)]
+    [Params(10, 100, 1000, 10000, 100_000, 1_000_000)]
     public int Size;
 
     private int[] _keys;
