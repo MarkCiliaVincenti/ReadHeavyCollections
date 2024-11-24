@@ -3,8 +3,8 @@
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
 		<Authors>Mark Cilia Vincenti</Authors>
-		<RepositoryUrl>https://github.com/MarkCiliaVincenti/AsyncKeyedLock.git</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/MarkCiliaVincenti/AsyncKeyedLock</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/MarkCiliaVincenti/ReadHeavyCollections.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/MarkCiliaVincenti/ReadHeavyCollections</PackageProjectUrl>
 		<Copyright>MIT</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Version>0.0.1-alpha</Version>
