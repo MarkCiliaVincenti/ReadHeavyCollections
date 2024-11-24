@@ -33,7 +33,9 @@ jobs:
       run: dotnet test --no-restore --configuration Release --logger:"console;verbosity=normal" --collect:"XPlat Code Coverage" --settings coverlet.runsettings
       
     - name: Coverage
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
+      with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       
     - name: Run benchmark
       run: dotnet run --framework net9.0 --configuration Release --exporters json --filter '*'
