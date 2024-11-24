@@ -28,15 +28,19 @@ jobs:
       
     - name: Build
       run: dotnet build --no-restore --configuration Release
-      
+
     - name: Test
       run: dotnet test --no-restore --configuration Release --logger:"console;verbosity=normal" --collect:"XPlat Code Coverage" --settings coverlet.runsettings
-      
+
     - name: Code Coverage
       uses: codecov/codecov-action@v5
       with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Run benchmark (net8.0)
+      run: dotnet run --framework net8.0 --configuration Release --exporters json --filter '*'
+      working-directory: Benchmarks
       
-    - name: Run benchmark
+    - name: Run benchmark (net9.0)
       run: dotnet run --framework net9.0 --configuration Release --exporters json --filter '*'
       working-directory: Benchmarks
