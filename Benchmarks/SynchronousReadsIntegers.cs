@@ -6,7 +6,7 @@ using System.Collections.Frozen;
 namespace Benchmarks;
 
 [MemoryDiagnoser]
-public class SynchronousReads
+public class SynchronousReadsIntegers
 {
     [Params(10, 100, 1000, 10000, 100_000, 1_000_000)]
     public int Size;
@@ -15,7 +15,6 @@ public class SynchronousReads
 
     private Dictionary<int, int> _dictionary;
     private ConcurrentDictionary<int, int> _concurrentDictionary;
-    private NonBlocking.ConcurrentDictionary<int, int> _nonBlockingDictionary;
     private FrozenDictionary<int, int> _frozenDictionary;
     private ReadHeavyDictionary<int, int> _readHeavyDictionary;
 
@@ -41,7 +40,6 @@ public class SynchronousReads
         _concurrentDictionary = new(_dictionary);
         _frozenDictionary = _dictionary.ToFrozenDictionary();
         _readHeavyDictionary = new(_dictionary);
-        _nonBlockingDictionary = new(_dictionary);
 
         _keys = [.. uniqueKeys];
     }
@@ -70,22 +68,6 @@ public class SynchronousReads
         foreach (var key in _keys)
         {
             if (_concurrentDictionary.TryGetValue(key, out var value))
-            {
-                latestValue = value;
-            }
-        }
-
-        return latestValue;
-    }
-
-    [Benchmark]
-    public int NonBlocking()
-    {
-        var latestValue = -1;
-
-        foreach (var key in _keys)
-        {
-            if (_nonBlockingDictionary.TryGetValue(key, out var value))
             {
                 latestValue = value;
             }
