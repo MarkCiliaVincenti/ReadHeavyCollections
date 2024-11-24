@@ -143,7 +143,82 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         }
         return removed;
     }
-    #endregion
+
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// <inheritdoc cref="Dictionary{TKey, TValue}.Capacity"/>
+    /// </summary>
+    public int Capacity
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _dictionary.Capacity;
+    }
+#endif
+
+    /// <summary>
+    /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.Comparer"/>
+    /// </summary>
+    public IEqualityComparer<TKey> Comparer
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _frozenDictionary.Comparer;
+    }
+
+    /// <summary>
+    /// Determines whether the <see cref="ReadHeavyDictionary{TKey, TValue}"/> contains a specific value.
+    /// </summary>
+    /// <param name="value">The value to locate in the <see cref="ReadHeavyDictionary{TKey, TValue}"/>. The value can be null for reference types.</param>
+    /// <returns>true if the <see cref="ReadHeavyDictionary{TKey, TValue}"/> contains an element with the specified value; otherwise, false.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool ContainsValue(TValue value) => _frozenDictionary.Values.Contains(value);
+
+    /// <summary>
+    /// <inheritdoc cref="Dictionary{TKey, TValue}.EnsureCapacity(int)"/>
+    /// </summary>
+    /// <param name="capacity"><inheritdoc cref="Dictionary{TKey, TValue}.EnsureCapacity(int)"/></param>
+    /// <returns>The current capacity of the <see cref="ReadHeavyDictionary{TKey, TValue}"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException" />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public int EnsureCapacity(int capacity) => _dictionary.EnsureCapacity(capacity);
+
+    /// <summary>
+    /// <inheritdoc cref="Dictionary{TKey, TValue}.TrimExcess()"/>
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TrimExcess() => _dictionary.TrimExcess();
+
+    /// <summary>
+    /// <inheritdoc cref="Dictionary{TKey, TValue}.TrimExcess(int)"/>
+    /// </summary>
+    /// <param name="capacity"><inheritdoc cref="Dictionary{TKey, TValue}.TrimExcess(int)"/></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void TrimExcess(int capacity) => _dictionary.TrimExcess(capacity);
+
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of a type that may be used to perform operations on the current <see cref="ReadHeavyDictionary{TKey, TValue}"/> using a <typeparamref name="TAlternateKey"/> as a key instead of a <typeparamref name="TKey"/>.
+    /// </summary>
+    /// <typeparam name="TAlternateKey">The alternate type of a key for performing lookups.</typeparam>
+    /// <param name="lookup">The created lookup instance when the method returns true, or a default instance that should not be used if the method returns false.</param>
+    /// <returns>true if a lookup could be created; otherwise, false.</returns>
+    /// <remarks>
+    /// The dictionary must be using a comparer that implements <see cref="IAlternateEqualityComparer{TAlternateKey, TKey}"/> with
+    /// <typeparamref name="TAlternateKey"/> and <typeparamref name="TKey"/>. If it doesn't, the method will return false.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool TryGetAlternateLookup<TAlternateKey>(
+            out Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> lookup)
+            where TAlternateKey : notnull, allows ref struct => _dictionary.TryGetAlternateLookup(out lookup);
+#endif
+
+    /// <summary>
+    /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.GetValueRefOrNullRef(TKey)"/>
+    /// </summary>
+    /// <param name="key"><inheritdoc cref="FrozenDictionary{TKey, TValue}.GetValueRefOrNullRef(TKey)"/></param>
+    /// <returns><inheritdoc cref="FrozenDictionary{TKey, TValue}.GetValueRefOrNullRef(TKey)"/></returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref readonly TValue GetValueRefOrNullRef(TKey key) => ref _frozenDictionary.GetValueRefOrNullRef(key);
+#endregion
 
     #region HelperMethods
 
