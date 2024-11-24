@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
-#if NET9_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using System.ComponentModel;
 #endif
 using System.Diagnostics;
@@ -378,8 +378,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <param name="context"><inheritdoc /></param>
 #if NET8_0_OR_GREATER
     [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
-#endif
-#if NET9_0_OR_GREATER
     [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
