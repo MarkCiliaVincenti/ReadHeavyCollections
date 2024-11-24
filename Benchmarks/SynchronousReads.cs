@@ -54,7 +54,9 @@ public class SynchronousReads
         foreach (var key in _keys)
         {
             if (_dictionary.TryGetValue(key, out var value))
+            {
                 latestValue = value;
+            }
         }
 
         return latestValue;
@@ -68,7 +70,9 @@ public class SynchronousReads
         foreach (var key in _keys)
         {
             if (_concurrentDictionary.TryGetValue(key, out var value))
+            {
                 latestValue = value;
+            }
         }
 
         return latestValue;
@@ -82,7 +86,9 @@ public class SynchronousReads
         foreach (var key in _keys)
         {
             if (_nonBlockingDictionary.TryGetValue(key, out var value))
+            {
                 latestValue = value;
+            }
         }
 
         return latestValue;
@@ -96,7 +102,9 @@ public class SynchronousReads
         foreach (var key in _keys)
         {
             if (_frozenDictionary.TryGetValue(key, out var value))
+            {
                 latestValue = value;
+            }
         }
 
         return latestValue;
@@ -110,7 +118,9 @@ public class SynchronousReads
         foreach (var key in _keys)
         {
             if (_readHeavyDictionary.TryGetValue(key, out var value))
+            {
                 latestValue = value;
+            }
         }
 
         return latestValue;
