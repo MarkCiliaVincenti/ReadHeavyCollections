@@ -25,7 +25,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     private FrozenSet<T> _frozenSet;
     private readonly HashSet<T> _hashSet;
     private readonly bool _isComparerSet;
-    private readonly IEqualityComparer<T> _comparer;
+    private readonly IEqualityComparer<T>? _comparer;
 
     #region Constructors
     /// <summary>
@@ -36,6 +36,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     {
         _isComparerSet = false;
         _hashSet = [];
+        _frozenSet = _hashSet.ToFrozenSet();
     }
 
     /// <summary>
@@ -47,7 +48,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     {
         _isComparerSet = false;
         _hashSet = collection.ToHashSet();
-        Freeze();
+        _frozenSet = _hashSet.ToFrozenSet();
     }
 
     /// <summary>
@@ -60,6 +61,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
         _isComparerSet = true;
         _comparer = comparer;
         _hashSet = new(comparer);
+        _frozenSet = _hashSet.ToFrozenSet(comparer);
     }
 
     /// <summary>
@@ -71,7 +73,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     {
         _isComparerSet = false;
         _hashSet = [.. set];
-        Freeze();
+        _frozenSet = _hashSet.ToFrozenSet();
     }
 
     /// <summary>
@@ -85,7 +87,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
         _isComparerSet = true;
         _comparer = comparer;
         _hashSet = collection.ToHashSet(comparer);
-        Freeze();
+        _frozenSet = _hashSet.ToFrozenSet(comparer);
     }
 
     /// <summary>
@@ -99,7 +101,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
         _isComparerSet = true;
         _comparer = comparer;
         _hashSet = set.ToHashSet(comparer);
-        Freeze();
+        _frozenSet = _hashSet.ToFrozenSet(comparer);
     }
     #endregion
 
@@ -374,8 +376,10 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="info"><inheritdoc /></param>
     /// <param name="context"><inheritdoc /></param>
+#if NET8_0_OR_GREATER
+    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
 #if NET9_0_OR_GREATER
-    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -388,7 +392,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="sender"><inheritdoc /></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnDeserialization(object sender)
+    public void OnDeserialization(object? sender)
     {
         lock (_lock)
         {

@@ -2,6 +2,8 @@
 using ReadHeavyCollections;
 using System.Collections.Concurrent;
 
+namespace Benchmarks;
+
 [MemoryDiagnoser]
 public class SynchronousWrite
 {

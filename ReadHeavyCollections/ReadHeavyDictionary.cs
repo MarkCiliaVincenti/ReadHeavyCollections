@@ -27,7 +27,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     private FrozenDictionary<TKey, TValue> _frozenDictionary;
     private readonly Dictionary<TKey, TValue> _dictionary;
     private readonly bool _isComparerSet;
-    private readonly IEqualityComparer<TKey> _comparer;
+    private readonly IEqualityComparer<TKey>? _comparer;
 
     #region Constructors
     /// <summary>
@@ -38,6 +38,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     {
         _isComparerSet = false;
         _dictionary = [];
+        _frozenDictionary = _dictionary.ToFrozenDictionary();
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     {
         _isComparerSet = false;
         _dictionary = collection.ToDictionary(x => x.Key, x => x.Value);
-        Freeze();
+        _frozenDictionary = _dictionary.ToFrozenDictionary();
     }
 
     /// <summary>
@@ -62,6 +63,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         _isComparerSet = true;
         _comparer = comparer;
         _dictionary = new(comparer);
+        _frozenDictionary = _dictionary.ToFrozenDictionary(comparer);
     }
 
     /// <summary>
@@ -73,7 +75,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     {
         _isComparerSet = false;
         _dictionary = dictionary.ToDictionary(x => x.Key, x => x.Value);
-        Freeze();
+        _frozenDictionary = _dictionary.ToFrozenDictionary();
     }
 
     /// <summary>
@@ -87,7 +89,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         _isComparerSet = true;
         _comparer = comparer;
         _dictionary = collection.ToDictionary(x => x.Key, x => x.Value, comparer);
-        Freeze();
+        _frozenDictionary = _dictionary.ToFrozenDictionary(comparer);
     }
 
     /// <summary>
@@ -101,7 +103,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         _isComparerSet = true;
         _comparer = comparer;
         _dictionary = dictionary.ToDictionary(x => x.Key, x => x.Value, comparer);
-        Freeze();
+        _frozenDictionary = _dictionary.ToFrozenDictionary(comparer);
     }
     #endregion
 
@@ -436,7 +438,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         get => _frozenDictionary.Values;
     }
 
-    object IDictionary.this[object key]
+    object? IDictionary.this[object key]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -473,7 +475,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IDictionary.Add(object key, object value)
+    void IDictionary.Add(object key, object? value)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -525,13 +527,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// </summary>
     /// <param name="info"><inheritdoc /></param>
     /// <param name="context"><inheritdoc /></param>
+#if NET8_0_OR_GREATER
+    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
 #if NET9_0_OR_GREATER
-    [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetObjectData(SerializationInfo info, StreamingContext context) => _dictionary.GetObjectData(info, context);
-    #endregion
+#endregion
 
     #region IDeserializationCallback
     /// <summary>
@@ -539,7 +543,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// </summary>
     /// <param name="sender"><inheritdoc /></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void OnDeserialization(object sender)
+    public void OnDeserialization(object? sender)
     {
         lock (_lock)
         {
