@@ -331,12 +331,8 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     {
         lock (_lock)
         {
-            if (_dictionary.TryAdd(key, value))
-            {
-                Freeze();
-                return;
-            }
-            throw new ArgumentException($"An item with the same key has already been added. Key: {key}", nameof(key));
+            _dictionary.Add(key, value);
+            Freeze();
         }
     }
 
