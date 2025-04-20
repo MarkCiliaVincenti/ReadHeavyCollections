@@ -220,7 +220,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <returns><inheritdoc cref="FrozenDictionary{TKey, TValue}.GetValueRefOrNullRef(TKey)"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref readonly TValue GetValueRefOrNullRef(TKey key) => ref _frozenDictionary.GetValueRefOrNullRef(key);
-#endregion
+    #endregion
 
     #region HelperMethods
 
@@ -293,16 +293,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(TKey key)
     {
-        bool removed;
         lock (_lock)
         {
-            removed = _dictionary.Remove(key);
-            if (removed)
+            if (_dictionary.Remove(key))
             {
                 Freeze();
+                return true;
             }
+            return false;
         }
-        return removed;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -332,8 +331,10 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     {
         lock (_lock)
         {
-            _dictionary.Add(key, value);
-            Freeze();
+            if (_dictionary.TryAdd(key, value))
+            {
+                Freeze();
+            }
         }
     }
 
@@ -533,7 +534,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetObjectData(SerializationInfo info, StreamingContext context) => _dictionary.GetObjectData(info, context);
-#endregion
+    #endregion
 
     #region IDeserializationCallback
     /// <summary>

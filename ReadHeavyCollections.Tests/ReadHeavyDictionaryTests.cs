@@ -1,4 +1,9 @@
 using FluentAssertions;
+using Newtonsoft.Json.Linq;
+using System.Collections;
+using System.Collections.Frozen;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace ReadHeavyCollections.Tests;
@@ -66,6 +71,7 @@ public class ReadHeavyDictionaryTests
     {
         var dict = new ReadHeavyDictionary<string, int>();
         dict.Add("one", 1);
+        dict.Contains(new KeyValuePair<string, int>("one", 1)).Should().BeTrue();
         dict["one"].Should().Be(1);
     }
 
@@ -204,5 +210,69 @@ public class ReadHeavyDictionaryTests
             dict.TryGetValue(i, out var val).Should().BeTrue();
             val.Should().Be(i.ToString());
         });
+    }
+
+    [Fact]
+    public void ContainsValue_ShouldReturnExpectedResult()
+    {
+        var dict = new ReadHeavyDictionary<string, int>
+        {
+            ["present"] = 1
+        };
+        dict.ContainsValue(1).Should().BeTrue();
+        dict.ContainsValue(2).Should().BeFalse();
+    }
+
+    [Fact]
+    public void EnsureCapacity_ShouldNotThrow()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.EnsureCapacity(100);
+#if NET9_0_OR_GREATER
+        dict.Capacity.Should().BeGreaterThanOrEqualTo(100);
+#endif
+    }
+
+    [Fact]
+    public void TrimExcess_ShouldNotThrow()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.TrimExcess();
+    }
+
+    [Fact]
+    public void TrimExcessWithCapacity_ShouldNotThrow()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.TrimExcess(100);
+    }
+
+    [Fact]
+    public void GetValueRefOrNullRef_ShouldReturnExpectedValue()
+    {
+        var dict = new ReadHeavyDictionary<string, int>
+        {
+            ["present"] = 42
+        };
+
+        ref readonly int presentRef = ref dict.GetValueRefOrNullRef("present");
+
+        presentRef.Should().Be(42);
+
+        Action action = () => {
+            ref readonly int missingRef = ref dict.GetValueRefOrNullRef("missing");
+            missingRef.Should().Be(null);
+        };
+
+        action.Should().Throw<NullReferenceException>();
+    }
+
+    [Fact]
+    public void IsReadOnly_ShouldReturnFalse()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.Add
+        dict.ToDictionary().TryAdd()
+        dict.IsReadOnly.Should().BeFalse();
     }
 }
