@@ -151,6 +151,15 @@ public class ReadHeavyDictionaryTests
         dict.Remove("x", out _).Should().BeFalse();
     }
 
+#if NET9_0_OR_GREATER
+    [Fact]
+    public void Capacity_ShouldReturnExpectedValue()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.Capacity.Should().Be(0);
+    }
+#endif
+
     [Fact]
     public void Clear_ShouldEmptyDictionary()
     {
@@ -167,6 +176,7 @@ public class ReadHeavyDictionaryTests
             ["HELLO"] = 10
         };
         dict.ContainsKey("hello").Should().BeTrue();
+        dict.Comparer.Should().Be(StringComparer.OrdinalIgnoreCase);
     }
 
     [Fact]
