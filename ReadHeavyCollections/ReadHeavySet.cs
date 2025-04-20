@@ -113,13 +113,23 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(IEnumerable<T> items)
     {
-        lock (_lock)
+        if (items.Any())
         {
-            foreach (var item in items)
+            lock (_lock)
             {
-                _hashSet.Add(item);
+                bool added = false;
+                foreach (var item in items)
+                {
+                    if (_hashSet.Add(item))
+                    {
+                        added = true;
+                    }
+                }
+                if (added)
+                {
+                    Freeze();
+                }
             }
-            Freeze();
         }
     }
     #endregion
