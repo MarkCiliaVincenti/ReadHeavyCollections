@@ -6,72 +6,72 @@ namespace ReadHeavyCollections.Tests;
 public class ReadHeavySetTests
 {
     [Fact]
-    public void ReadTest()
-    {
-        ReadHeavySet<int> readHeavySet = [1];
-        Assert.Equal(1, readHeavySet.First());
-    }
-
-    [Fact]
-    public void Add_And_Contains_Works()
-    {
-        var set = new ReadHeavySet<string>();
-        set.Add("apple").Should().BeTrue();
-        set.Contains("apple").Should().BeTrue();
-    }
-
-    [Fact]
-    public void Add_Returns_False_On_Duplicate()
+    public void Add_ShouldReturnTrue_WhenNewItemAdded()
     {
         var set = new ReadHeavySet<int>();
-        set.Add(1).Should().BeTrue();
-        set.Add(1).Should().BeFalse();
+        var added = set.Add(42);
+        added.Should().BeTrue();
+        set.Count.Should().Be(1);
     }
 
     [Fact]
-    public void Remove_Works_Correctly()
-    {
-        var set = new ReadHeavySet<int>
-        {
-            42
-        };
-        set.Remove(42).Should().BeTrue();
-        set.Contains(42).Should().BeFalse();
-    }
-
-    [Fact]
-    public void Clear_Removes_All()
+    public void Add_ShouldReturnFalse_WhenItemExists()
     {
         var set = new ReadHeavySet<string>
         {
-            "x",
-            "y"
+            "hello"
         };
+        set.Add("hello").Should().BeFalse();
+    }
+
+    [Fact]
+    public void Remove_ShouldReturnTrue_IfItemExisted()
+    {
+        var set = new ReadHeavySet<int> { 10 };
+        set.Remove(10).Should().BeTrue();
+        set.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void Clear_ShouldEmptyTheSet()
+    {
+        var set = new ReadHeavySet<int> { 1, 2, 3 };
         set.Clear();
         set.Count.Should().Be(0);
     }
 
     [Fact]
-    public void Can_Enumerate_Items()
+    public void Contains_ShouldReturnExpectedResult()
     {
-        var set = new ReadHeavySet<int>
-        {
-            1,
-            2,
-            3
-        };
-
-        var values = set.ToList();
-        values.Should().Contain([1, 2, 3]);
+        var set = new ReadHeavySet<string> { "a", "b" };
+        set.Contains("a").Should().BeTrue();
+        set.Contains("z").Should().BeFalse();
     }
 
     [Fact]
-    public void Concurrent_Reads_Are_Thread_Safe()
+    public void Enumerator_ShouldIterateOverSnapshot()
     {
-        var set = new ReadHeavySet<int>(Enumerable.Range(0, 1000));
-        Parallel.For(0, 1000, i =>
+        var set = new ReadHeavySet<int>();
+        for (int i = 0; i < 5; i++) set.Add(i);
+
+        var snapshot = set.ToList();
+        snapshot.Should().BeEquivalentTo([0, 1, 2, 3, 4]);
+    }
+
+    [Fact]
+    public void Set_ShouldSupport_CustomComparer()
+    {
+        var set = new ReadHeavySet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            set.Contains(i).Should().BeTrue();
-        });
+            "HELLO"
+        };
+        set.Contains("hello").Should().BeTrue();
+    }
+
+    [Fact]
+    public void ConcurrentReads_ShouldBeThreadSafe()
+    {
+        var set = new ReadHeavySet<int>(Enumerable.Range(1, 1000));
+        Parallel.For(1, 1000, i => set.Contains(i).Should().BeTrue());
     }
 }

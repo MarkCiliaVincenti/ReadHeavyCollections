@@ -6,91 +6,110 @@ namespace ReadHeavyCollections.Tests;
 public class ReadHeavyDictionaryTests
 {
     [Fact]
-    public void Add_And_TryGetValue_Works()
+    public void Add_ShouldInsertItem()
     {
         var dict = new ReadHeavyDictionary<string, int>
         {
-            { "a", 1 }
+            { "one", 1 }
         };
-
-        dict.Count.Should().Be(1);
-        dict.TryGetValue("a", out var value).Should().BeTrue();
-        value.Should().Be(1);
+        dict["one"].Should().Be(1);
     }
 
     [Fact]
-    public void Add_Throws_On_Duplicate_Key()
+    public void Add_DuplicateKey_ShouldThrow()
     {
         var dict = new ReadHeavyDictionary<string, int>
         {
-            { "key", 42 }
+            { "k", 1 }
         };
-        var act = () => dict.Add("key", 100);
-        act.Should().Throw<ArgumentException>();
+        FluentActions.Invoking(() => dict.Add("k", 2))
+            .Should().Throw<ArgumentException>();
     }
 
     [Fact]
-    public void Indexer_Get_And_Set_Works()
+    public void TryAdd_ShouldReturnFalse_WhenKeyExists()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.TryAdd("a", 1).Should().BeTrue();
+        dict.TryAdd("a", 2).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Indexer_ShouldSetAndGet()
+    {
+        var dict = new ReadHeavyDictionary<string, string>
+        {
+            ["x"] = "abc"
+        };
+        dict["x"].Should().Be("abc");
+    }
+
+    [Fact]
+    public void TryGetValue_ShouldWork()
     {
         var dict = new ReadHeavyDictionary<string, int>
         {
-            ["x"] = 10
+            ["age"] = 42
         };
-        dict["x"].Should().Be(10);
 
-        dict["x"] = 20;
-        dict["x"].Should().Be(20);
+        dict.TryGetValue("age", out var value).Should().BeTrue();
+        value.Should().Be(42);
+
+        dict.TryGetValue("unknown", out _).Should().BeFalse();
     }
 
     [Fact]
-    public void Remove_Works_Correctly()
+    public void ContainsKey_ShouldReturnExpectedResult()
     {
         var dict = new ReadHeavyDictionary<string, int>
         {
-            { "k", 5 }
+            ["present"] = 1
         };
-        dict.Remove("k").Should().BeTrue();
-        dict.ContainsKey("k").Should().BeFalse();
+        dict.ContainsKey("present").Should().BeTrue();
+        dict.ContainsKey("missing").Should().BeFalse();
     }
 
     [Fact]
-    public void ContainsKey_Returns_Correctly()
+    public void Remove_ShouldWork()
     {
-        var dict = new ReadHeavyDictionary<int, string>
-        {
-            { 1, "one" }
-        };
-        dict.ContainsKey(1).Should().BeTrue();
-        dict.ContainsKey(99).Should().BeFalse();
+        var dict = new ReadHeavyDictionary<string, int> { ["x"] = 1 };
+        dict.Remove("x").Should().BeTrue();
+        dict.Remove("x").Should().BeFalse();
     }
 
     [Fact]
-    public void Clear_Removes_All()
+    public void Clear_ShouldEmptyDictionary()
     {
-        var dict = new ReadHeavyDictionary<int, string>
-        {
-            { 1, "a" },
-            { 2, "b" }
-        };
+        var dict = new ReadHeavyDictionary<int, string> { [1] = "a", [2] = "b" };
         dict.Clear();
         dict.Count.Should().Be(0);
     }
 
     [Fact]
-    public void Can_Enumerate_All_Items()
+    public void Dictionary_ShouldSupportCustomComparer()
     {
-        var dict = new ReadHeavyDictionary<int, string>
+        var dict = new ReadHeavyDictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
-            [1] = "a",
-            [2] = "b"
+            ["HELLO"] = 10
         };
-
-        var keys = dict.Select(kv => kv.Key).ToList();
-        keys.Should().Contain(new[] { 1, 2 });
+        dict.ContainsKey("hello").Should().BeTrue();
     }
 
     [Fact]
-    public void Concurrent_Reads_Are_Thread_Safe()
+    public void Enumerator_ShouldYieldSnapshot()
+    {
+        var dict = new ReadHeavyDictionary<string, int>
+        {
+            ["a"] = 1,
+            ["b"] = 2
+        };
+
+        var keys = dict.Select(kvp => kvp.Key).ToList();
+        keys.Should().BeEquivalentTo(new[] { "a", "b" });
+    }
+
+    [Fact]
+    public void ConcurrentReads_ShouldBeThreadSafe()
     {
         var dict = new ReadHeavyDictionary<int, string>();
         for (int i = 0; i < 1000; i++)
@@ -98,14 +117,8 @@ public class ReadHeavyDictionaryTests
 
         Parallel.For(0, 1000, i =>
         {
-            dict[i].Should().Be(i.ToString());
+            dict.TryGetValue(i, out var val).Should().BeTrue();
+            val.Should().Be(i.ToString());
         });
-    }
-
-    [Fact]
-    public void ReadTest()
-    {
-        ReadHeavyDictionary<int, int> readHeavyDictionary = new() { [0] = 1 };
-        Assert.Equal(1, readHeavyDictionary[0]);
     }
 }
