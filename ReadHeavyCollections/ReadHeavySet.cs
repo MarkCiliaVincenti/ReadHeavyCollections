@@ -149,14 +149,29 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <inheritdoc cref="HashSet{T}.Add(T)"/>
     /// </summary>
     /// <param name="item"></param>
+    /// <returns><inheritdoc cref="HashSet{T}.Add(T)"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(T item)
+    public bool Add(T item)
     {
         lock (_lock)
         {
-            _hashSet.Add(item);
-            Freeze();
+            if (_hashSet.Add(item))
+            {
+                Freeze();
+                return true;
+            }
+            return false;
         }
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="HashSet{T}.Add(T)"/>
+    /// </summary>
+    /// <param name="item"></param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Add(T item)
+    {
+        Add(item);
     }
 
     /// <summary>
