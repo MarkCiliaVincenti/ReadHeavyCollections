@@ -6,6 +6,62 @@ namespace ReadHeavyCollections.Tests;
 public class ReadHeavyDictionaryTests
 {
     [Fact]
+    public void DictionaryConstructor_ShouldCopyItems()
+    {
+        var initial = new Dictionary<string, int>
+        {
+            { "a", 1 },
+            { "b", 2 }
+        };
+        var dict = new ReadHeavyDictionary<string, int>(initial);
+        dict.Count.Should().Be(2);
+        dict["a"].Should().Be(1);
+        dict["b"].Should().Be(2);
+    }
+
+    [Fact]
+    public void DictionaryConstructorWithComparer_ShouldCopyItems()
+    {
+        var initial = new Dictionary<string, int>
+        {
+            { "a", 1 },
+            { "b", 2 }
+        };
+        var dict = new ReadHeavyDictionary<string, int>(initial, StringComparer.OrdinalIgnoreCase);
+        dict.Count.Should().Be(2);
+        dict["a"].Should().Be(1);
+        dict["b"].Should().Be(2);
+    }
+
+    [Fact]
+    public void CollectionConstructorWithComparer_ShouldCopyItems()
+    {
+        var initial = new List<KeyValuePair<string, int>>
+        {
+            new("a", 1),
+            new("b", 2)
+        };
+        var dict = new ReadHeavyDictionary<string, int>(initial, StringComparer.OrdinalIgnoreCase);
+        dict.Count.Should().Be(2);
+        dict["a"].Should().Be(1);
+        dict["b"].Should().Be(2);
+    }
+
+    [Fact]
+    public void CollectionConstructor_ShouldCopyItems()
+    {
+        var initial = new List<KeyValuePair<string, int>>
+        {
+            new("a", 1),
+            new("b", 2)
+        };
+        var dict = new ReadHeavyDictionary<string, int>(initial);
+        dict.Count.Should().Be(2);
+        dict["a"].Should().Be(1);
+        dict["b"].Should().Be(2);
+    }
+
+    [Fact]
     public void Add_ShouldInsertItem()
     {
         var dict = new ReadHeavyDictionary<string, int>
