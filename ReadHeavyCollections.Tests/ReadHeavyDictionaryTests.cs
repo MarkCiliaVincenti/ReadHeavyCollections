@@ -328,5 +328,35 @@ public class ReadHeavyDictionaryTests
         };
         var newDict2 = dict2.ToReadHeavyDictionary(StringComparer.OrdinalIgnoreCase);
         newDict2.Should().BeEquivalentTo(dict2);
+
+        {
+            var source = new List<int>() { 1 };
+            var keySelector = new Func<int, string>(i => i.ToString());
+
+            var dictionary = source.ToDictionary(keySelector);
+            var heavyDict = source.ToReadHeavyDictionary(keySelector);
+
+            dictionary.Should().BeEquivalentTo(heavyDict);
+
+            dictionary = source.ToDictionary(keySelector, StringComparer.OrdinalIgnoreCase);
+            heavyDict = source.ToReadHeavyDictionary(keySelector, StringComparer.OrdinalIgnoreCase);
+
+            dictionary.Should().BeEquivalentTo(heavyDict);
+        }
+        {
+            var source = new List<int>() { 1 };
+            var keySelector = new Func<int, string>(i => i.ToString());
+            var elementSelector = new Func<int, int>(i => i + 1);
+
+            var dictionary = source.ToDictionary(keySelector, elementSelector);
+            var heavyDict = source.ToReadHeavyDictionary(keySelector, elementSelector);
+
+            dictionary.Should().BeEquivalentTo(heavyDict);
+
+            dictionary = source.ToDictionary(keySelector, elementSelector, StringComparer.OrdinalIgnoreCase);
+            heavyDict = source.ToReadHeavyDictionary(keySelector, elementSelector, StringComparer.OrdinalIgnoreCase);
+
+            dictionary.Should().BeEquivalentTo(heavyDict);
+        }
     }
 }
