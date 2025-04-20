@@ -72,6 +72,8 @@ public class ReadHeavyDictionaryTests
         var dict = new ReadHeavyDictionary<string, int>();
         dict.Add("one", 1);
         dict.Contains(new KeyValuePair<string, int>("one", 1)).Should().BeTrue();
+        dict.Keys.Should().Contain("one");
+        dict.Values.Should().Contain(1);
         dict["one"].Should().Be(1);
     }
 
@@ -268,11 +270,13 @@ public class ReadHeavyDictionaryTests
     }
 
     [Fact]
-    public void IsReadOnly_ShouldReturnFalse()
+    public void ThisNull_ShouldThrow()
     {
-        var dict = new ReadHeavyDictionary<string, int>();
-        dict.Add
-        dict.ToDictionary().TryAdd()
-        dict.IsReadOnly.Should().BeFalse();
+        Action action = () =>
+        {
+            var dict = new ReadHeavyDictionary<string, int>();
+            dict[null!] = 2;
+        };
+        action.Should().Throw<ArgumentNullException>();
     }
 }
