@@ -309,4 +309,16 @@ public class ReadHeavyDictionaryTests
         Action action = () => dict.OnDeserialization(info);
         action.Should().NotThrow();
     }
+
+    [Fact]
+    public void ToReadHeavyDictionary_ShouldReturnExpectedValue()
+    {
+        var dict = new Dictionary<string, int>
+        {
+            ["a"] = 1,
+            ["b"] = 2
+        };
+        var newDict = dict.ToReadHeavyDictionary();
+        newDict.Should().BeEquivalentTo(dict);
+    }
 }
