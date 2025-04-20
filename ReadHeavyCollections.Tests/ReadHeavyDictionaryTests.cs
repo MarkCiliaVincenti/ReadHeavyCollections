@@ -64,22 +64,31 @@ public class ReadHeavyDictionaryTests
     [Fact]
     public void Add_ShouldInsertItem()
     {
-        var dict = new ReadHeavyDictionary<string, int>
-        {
-            { "one", 1 }
-        };
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.Add("one", 1);
         dict["one"].Should().Be(1);
     }
 
     [Fact]
     public void Add_DuplicateKey_ShouldThrow()
     {
-        var dict = new ReadHeavyDictionary<string, int>
-        {
-            { "k", 1 }
-        };
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict.Add("k", 1);
         FluentActions.Invoking(() => dict.Add("k", 2))
             .Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void AddRange_ShouldNotThrow()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var items = new List<KeyValuePair<string, int>>
+        {
+            new("one", 1),
+            new("two", 2)
+        };
+        dict.AddRange(items);
+        dict["one"].Should().Be(1);
     }
 
     [Fact]
