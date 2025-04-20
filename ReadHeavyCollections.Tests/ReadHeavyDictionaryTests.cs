@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using Xunit;
 
 namespace ReadHeavyCollections.Tests;
@@ -278,5 +279,34 @@ public class ReadHeavyDictionaryTests
             dict[null!] = 2;
         };
         action.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void CopyTo_ShouldCopyItems()
+    {
+        var dict = new ReadHeavyDictionary<string, int>
+        {
+            ["a"] = 1,
+            ["b"] = 2
+        };
+        var array = new KeyValuePair<string, int>[2];
+        dict.CopyTo(array, 0);
+        array[0].Should().Be(new KeyValuePair<string, int>("a", 1));
+        array[1].Should().Be(new KeyValuePair<string, int>("b", 2));
+    }
+
+    [Fact]
+    public void OnDeserialization_ShouldNotThrow()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+#pragma warning disable SYSLIB0050 // Type or member is obsolete
+        var info = new SerializationInfo(typeof(ReadHeavyDictionary<string, int>), new FormatterConverter());
+#pragma warning restore SYSLIB0050 // Type or member is obsolete
+        info.AddValue("Count", 0);
+        info.AddValue("Comparer", StringComparer.OrdinalIgnoreCase);
+        info.AddValue("Keys", new string[0]);
+        info.AddValue("Values", new int[0]);
+        Action action = () => dict.OnDeserialization(info);
+        action.Should().NotThrow();
     }
 }
