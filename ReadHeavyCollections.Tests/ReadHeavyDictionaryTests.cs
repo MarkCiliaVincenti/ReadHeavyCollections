@@ -105,7 +105,7 @@ public class ReadHeavyDictionaryTests
         };
 
         var keys = dict.Select(kvp => kvp.Key).ToList();
-        keys.Should().BeEquivalentTo(new[] { "a", "b" });
+        keys.Should().BeEquivalentTo(["a", "b"]);
     }
 
     [Fact]

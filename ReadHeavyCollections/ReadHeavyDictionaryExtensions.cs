@@ -22,7 +22,7 @@ public static class ReadHeavyDictionary
     /// <returns>A <see cref="ReadHeavyDictionary{TKey, TValue}"/> that contains the specified keys and values.</returns>
     public static ReadHeavyDictionary<TKey, TValue> ToReadHeavyDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> source, IEqualityComparer<TKey>? comparer = null)
         where TKey : notnull =>
-        comparer is null ? new ReadHeavyDictionary<TKey, TValue>(source) : new ReadHeavyDictionary<TKey, TValue>(source, comparer);
+        comparer is null ? new(source) : new(source, comparer);
 
     /// <summary>Creates a <see cref="FrozenDictionary{TKey, TSource}"/> from an <see cref="IEnumerable{TSource}"/> according to specified key selector function.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>

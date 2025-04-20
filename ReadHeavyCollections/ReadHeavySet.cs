@@ -47,7 +47,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     public ReadHeavySet(IEnumerable<T> collection)
     {
         _isComparerSet = false;
-        _hashSet = collection.ToHashSet();
+        _hashSet = [.. collection];
         _frozenSet = _hashSet.ToFrozenSet();
     }
 
