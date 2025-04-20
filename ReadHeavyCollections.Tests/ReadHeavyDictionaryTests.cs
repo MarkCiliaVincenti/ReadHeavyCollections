@@ -143,6 +143,15 @@ public class ReadHeavyDictionaryTests
     }
 
     [Fact]
+    public void RemoveWithOut_ShouldWork()
+    {
+        var dict = new ReadHeavyDictionary<string, int> { ["x"] = 1 };
+        dict.Remove("x", out int value).Should().BeTrue();
+        value.Should().Be(1);
+        dict.Remove("x", out _).Should().BeFalse();
+    }
+
+    [Fact]
     public void Clear_ShouldEmptyDictionary()
     {
         var dict = new ReadHeavyDictionary<int, string> { [1] = "a", [2] = "b" };
