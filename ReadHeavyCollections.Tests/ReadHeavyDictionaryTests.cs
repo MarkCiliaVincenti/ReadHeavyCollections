@@ -320,5 +320,13 @@ public class ReadHeavyDictionaryTests
         };
         var newDict = dict.ToReadHeavyDictionary();
         newDict.Should().BeEquivalentTo(dict);
+
+        var dict2 = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["a"] = 1,
+            ["b"] = 2
+        };
+        var newDict2 = dict2.ToReadHeavyDictionary(StringComparer.OrdinalIgnoreCase);
+        newDict2.Should().BeEquivalentTo(dict2);
     }
 }
