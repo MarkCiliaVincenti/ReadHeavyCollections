@@ -359,4 +359,55 @@ public class ReadHeavyDictionaryTests
             dictionary.Should().BeEquivalentTo(heavyDict);
         }
     }
+
+    [Fact]
+    public void IDictionary_Interface_ShouldBehaveCorrectly()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        dict.Add("foo", 123);
+        dict.Contains("foo").Should().BeTrue();
+        dict["foo"].Should().Be(123);
+        dict.Remove("foo");
+        dict.Contains("foo").Should().BeFalse();
+    }
+
+    [Fact]
+    public void IDictionary_Add_InvalidKeyOrValue_ShouldThrow()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        Action addNullKey = () => dict.Add(null!, 1);
+        addNullKey.Should().Throw<ArgumentNullException>();
+
+        Action addInvalidKey = () => dict.Add(123, 1);
+        addInvalidKey.Should().Throw<ArgumentException>();
+
+        Action addInvalidValue = () => dict.Add("foo", "bar");
+        addInvalidValue.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ICollection_CopyTo_NotImplemented_ShouldThrow()
+    {
+        ICollection dict = new ReadHeavyDictionary<string, int>();
+        Action copyTo = () => dict.CopyTo(new object[1], 0);
+        copyTo.Should().Throw<NotImplementedException>();
+    }
+
+    [Fact]
+    public void Remove_KeyValuePair_ShouldWork()
+    {
+        var dict = new ReadHeavyDictionary<string, int> { ["a"] = 1 };
+        ((ICollection<KeyValuePair<string, int>>)dict).Remove(new KeyValuePair<string, int>("a", 1)).Should().BeTrue();
+        dict.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void Enumerator_ShouldWorkWithForeach()
+    {
+        var dict = new ReadHeavyDictionary<string, int> { ["a"] = 1, ["b"] = 2 };
+        var keys = new List<string>();
+        foreach (var kvp in dict)
+            keys.Add(kvp.Key);
+        keys.Should().BeEquivalentTo(["a", "b"]);
+    }
 }

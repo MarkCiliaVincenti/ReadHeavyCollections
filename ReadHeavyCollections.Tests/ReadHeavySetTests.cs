@@ -74,4 +74,54 @@ public class ReadHeavySetTests
         var set = new ReadHeavySet<int>(Enumerable.Range(1, 1000));
         Parallel.For(1, 1000, i => set.Contains(i).Should().BeTrue());
     }
+
+    [Fact]
+    public void AddRange_ShouldAddMultipleItems()
+    {
+        var set = new ReadHeavySet<int>();
+        set.AddRange(new[] { 1, 2, 3 });
+        set.Count.Should().Be(3);
+        set.Contains(2).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Set_ExceptWith_ShouldRemoveItems()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3, 4 });
+        set.ExceptWith(new[] { 2, 3 });
+        set.Should().BeEquivalentTo(new[] { 1, 4 });
+    }
+
+    [Fact]
+    public void Set_IntersectWith_ShouldRetainCommonItems()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3 });
+        set.IntersectWith(new[] { 2, 3, 4 });
+        set.Should().BeEquivalentTo(new[] { 2, 3 });
+    }
+
+    [Fact]
+    public void Set_UnionWith_ShouldAddAllItems()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2 });
+        set.UnionWith(new[] { 2, 3, 4 });
+        set.Should().BeEquivalentTo(new[] { 1, 2, 3, 4 });
+    }
+
+    [Fact]
+    public void Set_SymmetricExceptWith_ShouldWork()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3 });
+        set.SymmetricExceptWith(new[] { 2, 3, 4 });
+        set.Should().BeEquivalentTo(new[] { 1, 4 });
+    }
+
+    [Fact]
+    public void Set_CopyTo_ShouldCopyItems()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2 });
+        var array = new int[2];
+        set.CopyTo(array, 0);
+        array.Should().BeEquivalentTo(new[] { 1, 2 });
+    }
 }
