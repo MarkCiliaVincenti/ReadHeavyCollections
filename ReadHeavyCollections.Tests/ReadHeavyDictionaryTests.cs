@@ -327,7 +327,7 @@ public class ReadHeavyDictionaryTests
     [Fact]
     public void ToReadHeavyDictionary_ShouldReturnExpectedValue()
     {
-        var dict = new ReadHeavyDictionary<string, int>
+        var dict = new Dictionary<string, int>
         {
             ["a"] = 1,
             ["b"] = 2

@@ -158,4 +158,137 @@ public class ReadHeavySetTests
         set.Contains("a").Should().BeTrue();
         set.Contains("B").Should().BeTrue();
     }
+
+    [Fact]
+    public void Constructor_WithISet_ShouldCopyElements()
+    {
+        ISet<int> baseSet = new HashSet<int> { 1, 2, 3 };
+        var set = new ReadHeavySet<int>(baseSet);
+        set.Should().BeEquivalentTo(baseSet);
+    }
+
+    [Fact]
+    public void Constructor_WithISetAndComparer_ShouldCopyElementsAndUseComparer()
+    {
+        ISet<string> baseSet = new HashSet<string> { "A", "b" };
+        var set = new ReadHeavySet<string>(baseSet, StringComparer.OrdinalIgnoreCase);
+        set.Contains("a").Should().BeTrue();
+        set.Contains("B").Should().BeTrue();
+    }
+
+    [Fact]
+    public void ICollectionT_IsReadOnly_ShouldBeFalse()
+    {
+        ICollection<int> set = new ReadHeavySet<int>();
+        set.IsReadOnly.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ICollectionT_Add_ShouldAddItem()
+    {
+        ICollection<int> set = new ReadHeavySet<int>();
+        set.Add(123);
+        set.Should().Contain(123);
+    }
+
+    [Fact]
+    public void GetEnumerator_ShouldReturnEnumerator()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2 });
+        var enumerator = set.GetEnumerator();
+        var items = new List<int>();
+        while (enumerator.MoveNext())
+            items.Add(enumerator.Current);
+        items.Should().BeEquivalentTo(new[] { 1, 2 });
+    }
+
+    [Fact]
+    public void ISetT_Add_ShouldReturnTrueIfAdded()
+    {
+        ISet<int> set = new ReadHeavySet<int>();
+        set.Add(77).Should().BeTrue();
+        set.Add(77).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsProperSubsetOf_ShouldReturnExpected()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2 });
+        set.IsProperSubsetOf(new[] { 1, 2, 3 }).Should().BeTrue();
+        set.IsProperSubsetOf(new[] { 1, 2 }).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsProperSupersetOf_ShouldReturnExpected()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3 });
+        set.IsProperSupersetOf(new[] { 1, 2 }).Should().BeTrue();
+        set.IsProperSupersetOf(new[] { 1, 2, 3 }).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsSubsetOf_ShouldReturnExpected()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2 });
+        set.IsSubsetOf(new[] { 1, 2, 3 }).Should().BeTrue();
+        set.IsSubsetOf(new[] { 1, 2 }).Should().BeTrue();
+        set.IsSubsetOf(new[] { 2, 3 }).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsSupersetOf_ShouldReturnExpected()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3 });
+        set.IsSupersetOf(new[] { 1, 2 }).Should().BeTrue();
+        set.IsSupersetOf(new[] { 1, 2, 3 }).Should().BeTrue();
+        set.IsSupersetOf(new[] { 4 }).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Overlaps_ShouldReturnExpected()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3 });
+        set.Overlaps(new[] { 2, 99 }).Should().BeTrue();
+        set.Overlaps(new[] { 99, 100 }).Should().BeFalse();
+    }
+
+    [Fact]
+    public void SetEquals_ShouldReturnExpected()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2, 3 });
+        set.SetEquals(new[] { 3, 2, 1 }).Should().BeTrue();
+        set.SetEquals(new[] { 1, 2 }).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ICollection_IsSynchronized_ShouldBeTrue()
+    {
+        System.Collections.ICollection set = new ReadHeavySet<int>();
+        set.IsSynchronized.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ICollection_SyncRoot_ShouldReturnThis()
+    {
+        var set = new ReadHeavySet<int>();
+        ((System.Collections.ICollection)set).SyncRoot.Should().BeSameAs(set);
+    }
+
+    [Fact]
+    public void ICollection_CopyTo_ShouldCopyItems()
+    {
+        ICollection<int> set = new ReadHeavySet<int>(new[] { 1, 2 });
+        var array = new int[2];
+        set.CopyTo(array, 0);
+        array.Should().BeEquivalentTo(new[] { 1, 2 });
+    }
+
+    [Fact]
+    public void OnDeserialization_ShouldNotThrow()
+    {
+        var set = new ReadHeavySet<int>(new[] { 1, 2 });
+        set.OnDeserialization(null);
+        set.Should().Contain(1);
+        set.Should().Contain(2);
+    }
 }
