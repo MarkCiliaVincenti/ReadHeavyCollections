@@ -473,4 +473,63 @@ public class ReadHeavyDictionaryTests
         var collection = (ICollection)dict;
         collection.SyncRoot.Should().BeSameAs(dict);
     }
+
+    [Fact]
+    public void IDictionary_Contains_ShouldReturnTrueForValidKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 1 } };
+        dict.Contains("foo").Should().BeTrue();
+    }
+
+    [Fact]
+    public void IDictionary_Contains_ShouldReturnFalseForMissingKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 1 } };
+        dict.Contains("bar").Should().BeFalse();
+    }
+
+    [Fact]
+    public void IDictionary_Contains_ShouldReturnFalseForWrongKeyType()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 1 } };
+        dict.Contains(123).Should().BeFalse(); // int is not string
+    }
+
+    [Fact]
+    public void IDictionary_Contains_ShouldThrowForNullKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 1 } };
+        Action act = () => dict.Contains(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void IDictionary_IndexerGet_ShouldReturnValueForValidKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 42 } };
+        dict["foo"].Should().Be(42);
+    }
+
+    [Fact]
+    public void IDictionary_IndexerGet_ShouldThrowForMissingKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 42 } };
+        Action act = () => { var _ = dict["bar"]; };
+        act.Should().Throw<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public void IDictionary_IndexerGet_ShouldReturnNullForWrongKeyType()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 42 } };
+        dict[123].Should().BeNull();
+    }
+
+    [Fact]
+    public void IDictionary_IndexerGet_ShouldThrowForNullKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 42 } };
+        Action act = () => { var _ = dict[null!]; };
+        act.Should().Throw<ArgumentNullException>();
+    }
 }
