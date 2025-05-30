@@ -630,4 +630,20 @@ public class ReadHeavyDictionaryTests
         items.Should().Contain(new KeyValuePair<string, int>("b", 2));
         items.Count.Should().Be(2);
     }
+
+    [Fact]
+    public void IndexerSet_ShouldAllowNull_ForNullableValueType()
+    {
+        var dict = new ReadHeavyDictionary<string, int?>();
+        dict["foo"] = null;
+        dict["foo"].Should().BeNull();
+    }
+
+    [Fact]
+    public void IndexerSet_ShouldAllowNull_ForReferenceType()
+    {
+        var dict = new ReadHeavyDictionary<string, string>();
+        dict["foo"] = null;
+        dict["foo"].Should().BeNull();
+    }
 }

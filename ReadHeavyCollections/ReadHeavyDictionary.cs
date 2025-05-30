@@ -399,10 +399,6 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         set
         {
             ArgumentNullException.ThrowIfNull(key);
-            if (value == null && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
 
             lock (_lock)
             {
