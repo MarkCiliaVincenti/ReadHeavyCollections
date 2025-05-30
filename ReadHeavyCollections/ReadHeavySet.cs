@@ -391,7 +391,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ICollection.CopyTo(Array array, int index)
     {
-        _hashSet.ToArray().CopyTo(array, index);
+        ((ICollection)_frozenSet).CopyTo(array, index);
     }
     #endregion
 

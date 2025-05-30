@@ -291,4 +291,16 @@ public class ReadHeavySetTests
         set.Should().Contain(1);
         set.Should().Contain(2);
     }
+
+    [Fact]
+    public void ICollection_CopyTo_Array_ShouldCopyItems()
+    {
+        System.Collections.ICollection set = new ReadHeavySet<int>(new[] { 1, 2 });
+        var array = new object[2];
+        set.CopyTo(array, 0);
+
+        array.Should().Contain(1);
+        array.Should().Contain(2);
+        array.Should().HaveCount(2);
+    }
 }
