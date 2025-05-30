@@ -124,4 +124,38 @@ public class ReadHeavySetTests
         set.CopyTo(array, 0);
         array.Should().BeEquivalentTo(new[] { 1, 2 });
     }
+
+    [Fact]
+    public void Create_WithReadOnlySpan_ShouldReturnSetWithValues()
+    {
+        var span = new ReadOnlySpan<int>(new[] { 1, 2, 3 });
+        var set = ReadHeavySet.Create(span);
+        set.Should().BeEquivalentTo(new[] { 1, 2, 3 });
+    }
+
+    [Fact]
+    public void Create_WithReadOnlySpanAndComparer_ShouldReturnSetWithComparer()
+    {
+        var span = new ReadOnlySpan<string>(new[] { "A", "b" });
+        var set = ReadHeavySet.Create(StringComparer.OrdinalIgnoreCase, span);
+        set.Contains("a").Should().BeTrue();
+        set.Contains("B").Should().BeTrue();
+    }
+
+    [Fact]
+    public void ToReadHeavySet_WithEnumerable_ShouldReturnSet()
+    {
+        var source = new List<int> { 1, 2, 3 };
+        var set = source.ToReadHeavySet();
+        set.Should().BeEquivalentTo(source);
+    }
+
+    [Fact]
+    public void ToReadHeavySet_WithEnumerableAndComparer_ShouldReturnSetWithComparer()
+    {
+        var source = new List<string> { "A", "b" };
+        var set = source.ToReadHeavySet(StringComparer.OrdinalIgnoreCase);
+        set.Contains("a").Should().BeTrue();
+        set.Contains("B").Should().BeTrue();
+    }
 }
