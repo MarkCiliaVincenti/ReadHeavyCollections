@@ -7,16 +7,16 @@
 		<PackageProjectUrl>https://github.com/MarkCiliaVincenti/ReadHeavyCollections</PackageProjectUrl>
 		<Copyright>MIT</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Version>0.0.2-beta</Version>
+		<Version>1.0.0</Version>
 		<PackageIcon>logo.png</PackageIcon>
-		<PackageReleaseNotes>Updated logo and editorbrowsable attribute for .NET 8.</PackageReleaseNotes>
-		<Description>A dictionary and a set that offer very fast read speed in expense of slow write speed.</Description>
+		<PackageReleaseNotes>First stable release.</PackageReleaseNotes>
+		<Description>A dictionary and a set that offer very fast read speed in expense of slow write speed. Ideal in situations where the collection is infrequently updated but is very often read from.</Description>
 		<Copyright>© 2024 Mark Cilia Vincenti</Copyright>
 		<PackageTags>dictionary,set,hashset,read,heavy,fast</PackageTags>
 		<RepositoryType>git</RepositoryType>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<AssemblyVersion>0.0.2.0</AssemblyVersion>
-		<FileVersion>0.0.2.0</FileVersion>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
