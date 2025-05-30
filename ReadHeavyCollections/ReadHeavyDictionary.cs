@@ -398,9 +398,10 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            if (key == null)
+            ArgumentNullException.ThrowIfNull(key);
+            if (value == null && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentNullException(nameof(value));
             }
 
             lock (_lock)
@@ -453,6 +454,10 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         set
         {
             ArgumentNullException.ThrowIfNull(key);
+            if (value == null && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
 
             try
             {

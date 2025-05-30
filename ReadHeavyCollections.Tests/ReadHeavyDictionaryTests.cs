@@ -532,4 +532,102 @@ public class ReadHeavyDictionaryTests
         Action act = () => { var _ = dict[null!]; };
         act.Should().Throw<ArgumentNullException>();
     }
+
+    [Fact]
+    public void IDictionary_IndexerSet_ShouldSetValueForValidKeyAndValue()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        dict["foo"] = 123;
+        dict["foo"].Should().Be(123);
+    }
+
+    [Fact]
+    public void IDictionary_IndexerSet_ShouldThrowForNullKey()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        Action act = () => dict[null!] = 1;
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void IDictionary_IndexerSet_ShouldThrowForWrongKeyType()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        Action act = () => dict[123] = 1; // int is not string
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*123*String*");
+    }
+
+    [Fact]
+    public void IDictionary_IndexerSet_ShouldThrowForWrongValueType()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        Action act = () => dict["foo"] = "bar"; // string is not int
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*bar*Int32*");
+    }
+
+    [Fact]
+    public void IDictionary_IndexerSet_ShouldThrowForNullValueOnValueType()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        Action act = () => dict["foo"] = null!;
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void IDictionary_IndexerSet_ShouldAllowNullValueForReferenceType()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, string>();
+        dict["foo"] = null;
+        dict["foo"].Should().BeNull();
+    }
+
+    [Fact]
+    public void IDictionary_IsFixedSize_ShouldBeFalse()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        dict.IsFixedSize.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IDictionary_IsReadOnly_ShouldBeFalse()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int>();
+        dict.IsReadOnly.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IDictionary_Keys_ShouldReturnAllKeys()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "a", 1 }, { "b", 2 } };
+        var keys = dict.Keys;
+        keys.Should().BeEquivalentTo(new[] { "a", "b" });
+    }
+
+    [Fact]
+    public void IDictionary_Values_ShouldReturnAllValues()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "a", 1 }, { "b", 2 } };
+        var values = dict.Values;
+        values.Should().BeEquivalentTo(new[] { 1, 2 });
+    }
+
+    [Fact]
+    public void IDictionary_GetEnumerator_ShouldEnumerateAllItems()
+    {
+        IDictionary dict = new ReadHeavyDictionary<string, int> { { "a", 1 }, { "b", 2 } };
+        var enumerator = dict.GetEnumerator();
+        var items = new List<KeyValuePair<string, int>>();
+        while (enumerator.MoveNext())
+        {
+            if (enumerator.Current is DictionaryEntry de)
+                items.Add(new KeyValuePair<string, int>((string)de.Key, (int)de.Value));
+            else if (enumerator.Current is KeyValuePair<string, int> kvp)
+                items.Add(kvp);
+        }
+        items.Should().Contain(new KeyValuePair<string, int>("a", 1));
+        items.Should().Contain(new KeyValuePair<string, int>("b", 2));
+        items.Count.Should().Be(2);
+    }
 }
