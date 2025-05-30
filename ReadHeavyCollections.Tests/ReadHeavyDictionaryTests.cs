@@ -410,4 +410,67 @@ public class ReadHeavyDictionaryTests
             keys.Add(kvp.Key);
         keys.Should().BeEquivalentTo(["a", "b"]);
     }
+
+#if NET9_0_OR_GREATER
+    [Fact]
+    public void TryGetAlternateLookup_ShouldReturnFalse_WhenComparerDoesNotSupportAlternateKey()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var result = dict.TryGetAlternateLookup<int>(out var lookup);
+        result.Should().BeFalse();
+    }
+#endif
+
+    [Fact]
+    public void ICollectionOfKeyValuePair_IsReadOnly_ShouldBeFalse()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var isReadOnly = ((ICollection<KeyValuePair<string, int>>)dict).IsReadOnly;
+        isReadOnly.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ICollectionOfKeyValuePair_Add_ShouldAddItem()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var collection = (ICollection<KeyValuePair<string, int>>)dict;
+        collection.Add(new KeyValuePair<string, int>("foo", 42));
+        dict["foo"].Should().Be(42);
+    }
+
+    [Fact]
+    public void IEnumerable_GetEnumerator_ShouldReturnEnumerator()
+    {
+        var dict = new ReadHeavyDictionary<string, int> { ["a"] = 1, ["b"] = 2 };
+        var enumerable = (IEnumerable)dict;
+        var items = new List<KeyValuePair<string, int>>();
+        foreach (KeyValuePair<string, int> kvp in enumerable)
+            items.Add(kvp);
+        items.Should().BeEquivalentTo(new[] { new KeyValuePair<string, int>("a", 1), new KeyValuePair<string, int>("b", 2) });
+    }
+
+    [Fact]
+    public void IReadOnlyDictionary_Keys_And_Values_ShouldReturnExpected()
+    {
+        var dict = new ReadHeavyDictionary<string, int> { ["x"] = 10, ["y"] = 20 };
+        var roDict = (IReadOnlyDictionary<string, int>)dict;
+        roDict.Keys.Should().BeEquivalentTo(new[] { "x", "y" });
+        roDict.Values.Should().BeEquivalentTo(new[] { 10, 20 });
+    }
+
+    [Fact]
+    public void ICollection_IsSynchronized_ShouldBeTrue()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var collection = (ICollection)dict;
+        collection.IsSynchronized.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ICollection_SyncRoot_ShouldReturnSelf()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var collection = (ICollection)dict;
+        collection.SyncRoot.Should().BeSameAs(dict);
+    }
 }
