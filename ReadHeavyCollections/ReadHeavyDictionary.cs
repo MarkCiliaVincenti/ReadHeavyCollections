@@ -414,7 +414,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
 
     object ICollection.SyncRoot => this;
 
-    void ICollection.CopyTo(Array array, int index) => throw new NotImplementedException();
+    void ICollection.CopyTo(Array array, int index) => ((IDictionary)_frozenDictionary).CopyTo(array, index);
     #endregion
 
     #region IDictionary
@@ -441,7 +441,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         {
             if (IsCompatibleKey(key))
             {
-                return _frozenDictionary[(TKey)key];
+                return _frozenDictionary.TryGetValue((TKey)key, out var value) ? value : null;
             }
 
             return null;

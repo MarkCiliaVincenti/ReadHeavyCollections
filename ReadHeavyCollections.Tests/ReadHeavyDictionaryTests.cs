@@ -296,6 +296,20 @@ public class ReadHeavyDictionaryTests
     }
 
     [Fact]
+    public void ICollection_CopyTo_ShouldCopyItems()
+    {
+        ICollection dict = new ReadHeavyDictionary<string, int>
+        {
+            ["a"] = 1,
+            ["b"] = 2
+        };
+        var array = new KeyValuePair<string, int>[2];
+        dict.CopyTo(array, 0);
+        array[0].Should().Be(new KeyValuePair<string, int>("a", 1));
+        array[1].Should().Be(new KeyValuePair<string, int>("b", 2));
+    }
+
+    [Fact]
     public void OnDeserialization_ShouldNotThrow()
     {
         var dict = new ReadHeavyDictionary<string, int>();
@@ -313,7 +327,7 @@ public class ReadHeavyDictionaryTests
     [Fact]
     public void ToReadHeavyDictionary_ShouldReturnExpectedValue()
     {
-        var dict = new Dictionary<string, int>
+        var dict = new ReadHeavyDictionary<string, int>
         {
             ["a"] = 1,
             ["b"] = 2
@@ -321,7 +335,7 @@ public class ReadHeavyDictionaryTests
         var newDict = dict.ToReadHeavyDictionary();
         newDict.Should().BeEquivalentTo(dict);
 
-        var dict2 = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        var dict2 = new ReadHeavyDictionary<string, int>(StringComparer.OrdinalIgnoreCase)
         {
             ["a"] = 1,
             ["b"] = 2
@@ -383,14 +397,6 @@ public class ReadHeavyDictionaryTests
 
         Action addInvalidValue = () => dict.Add("foo", "bar");
         addInvalidValue.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
-    public void ICollection_CopyTo_NotImplemented_ShouldThrow()
-    {
-        ICollection dict = new ReadHeavyDictionary<string, int>();
-        Action copyTo = () => dict.CopyTo(new object[1], 0);
-        copyTo.Should().Throw<NotImplementedException>();
     }
 
     [Fact]
@@ -511,11 +517,11 @@ public class ReadHeavyDictionaryTests
     }
 
     [Fact]
-    public void IDictionary_IndexerGet_ShouldThrowForMissingKey()
+    public void IDictionary_IndexerGet_ShouldBeNull()
     {
         IDictionary dict = new ReadHeavyDictionary<string, int> { { "foo", 42 } };
-        Action act = () => { var _ = dict["bar"]; };
-        act.Should().Throw<KeyNotFoundException>();
+        var result = dict["bar"];
+        result.Should().BeNull();
     }
 
     [Fact]
