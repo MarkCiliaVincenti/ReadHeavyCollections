@@ -1,6 +1,6 @@
 <Project DefaultTargets="Build">
 	<PropertyGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
-		<SystemCollectionsImmutableVersion>8.0.0</SystemCollectionsImmutableVersion>
+		<SystemCollectionsImmutableVersion>9.0.0</SystemCollectionsImmutableVersion>
 	</PropertyGroup>
 	<PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
 		<SystemCollectionsImmutableVersion>9.0.0</SystemCollectionsImmutableVersion>
