@@ -403,7 +403,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         }
         finally
         {
-            _lock.EnterReadLock();
+            _lock.ExitReadLock();
         }
     }
 
@@ -422,7 +422,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         }
         finally
         {
-            _lock.EnterReadLock();
+            _lock.ExitReadLock();
         }
     }
 
@@ -758,7 +758,8 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
                 _lock.EnterWriteLock();
                 try
                 {
-                    this[tempKey] = (TValue)value!;
+                    _dictionary[tempKey] = (TValue)value!;
+                    Freeze();
                 }
                 catch (InvalidCastException)
                 {
@@ -787,7 +788,8 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
             _lock.EnterWriteLock();
             try
             {
-                this[tempKey] = (TValue)value!;
+                _dictionary[tempKey] = (TValue)value!;
+                Freeze();
             }
             catch (InvalidCastException)
             {
