@@ -23,7 +23,7 @@ namespace ReadHeavyCollections;
 [Serializable]
 public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>, IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, IDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, IReadOnlyDictionary<TKey, TValue>, ICollection, IDictionary, ISerializable, IDeserializationCallback where TKey : notnull
 {
-    private readonly Lock _lock = new();
+    private readonly ReaderWriterLockSlim _lock = new();
     private FrozenDictionary<TKey, TValue> _frozenDictionary;
     private readonly Dictionary<TKey, TValue> _dictionary;
     private readonly bool _isComparerSet;
@@ -115,13 +115,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> items)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             foreach (var item in items)
             {
                 _dictionary.Add(item.Key, item.Value);
             }
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -135,13 +140,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public bool Remove(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         bool removed;
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             removed = _dictionary.Remove(key, out value);
             if (removed)
             {
                 Freeze();
             }
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
         return removed;
     }
@@ -153,7 +163,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public int Capacity
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _dictionary.Capacity;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _dictionary.Capacity;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 #endif
 
@@ -163,7 +184,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public IEqualityComparer<TKey> Comparer
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Comparer;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Comparer;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     /// <summary>
@@ -172,7 +204,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <param name="value">The value to locate in the <see cref="ReadHeavyDictionary{TKey, TValue}"/>. The value can be null for reference types.</param>
     /// <returns>true if the <see cref="ReadHeavyDictionary{TKey, TValue}"/> contains an element with the specified value; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ContainsValue(TValue value) => _frozenDictionary.Values.Contains(value);
+    public bool ContainsValue(TValue value)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenDictionary.Values.Contains(value);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="Dictionary{TKey, TValue}.EnsureCapacity(int)"/>
@@ -181,20 +224,53 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <returns>The current capacity of the <see cref="ReadHeavyDictionary{TKey, TValue}"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException" />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int EnsureCapacity(int capacity) => _dictionary.EnsureCapacity(capacity);
+    public int EnsureCapacity(int capacity)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _dictionary.EnsureCapacity(capacity);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="Dictionary{TKey, TValue}.TrimExcess()"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void TrimExcess() => _dictionary.TrimExcess();
+    public void TrimExcess()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            _dictionary.TrimExcess();
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="Dictionary{TKey, TValue}.TrimExcess(int)"/>
     /// </summary>
     /// <param name="capacity"><inheritdoc cref="Dictionary{TKey, TValue}.TrimExcess(int)"/></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void TrimExcess(int capacity) => _dictionary.TrimExcess(capacity);
+    public void TrimExcess(int capacity)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            _dictionary.TrimExcess(capacity);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
 #if NET9_0_OR_GREATER
     /// <summary>
@@ -210,7 +286,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetAlternateLookup<TAlternateKey>(
             out Dictionary<TKey, TValue>.AlternateLookup<TAlternateKey> lookup)
-            where TAlternateKey : notnull, allows ref struct => _dictionary.TryGetAlternateLookup(out lookup);
+            where TAlternateKey : notnull, allows ref struct
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _dictionary.TryGetAlternateLookup(out lookup);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 #endif
 
     /// <summary>
@@ -219,7 +306,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <param name="key"><inheritdoc cref="FrozenDictionary{TKey, TValue}.GetValueRefOrNullRef(TKey)"/></param>
     /// <returns><inheritdoc cref="FrozenDictionary{TKey, TValue}.GetValueRefOrNullRef(TKey)"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref readonly TValue GetValueRefOrNullRef(TKey key) => ref _frozenDictionary.GetValueRefOrNullRef(key);
+    public ref readonly TValue GetValueRefOrNullRef(TKey key)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return ref _frozenDictionary.GetValueRefOrNullRef(key);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region HelperMethods
@@ -241,7 +339,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Count;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Count;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
@@ -249,10 +358,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _dictionary.Add(item.Key, item.Value);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -262,10 +376,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _dictionary.Clear();
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -275,7 +394,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <param name="item">The value to locate in the sequence.</param>
     /// <returns>true if the source sequence contains an element that has the specified value; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(KeyValuePair<TKey, TValue> item) => _frozenDictionary.Contains(item);
+    public bool Contains(KeyValuePair<TKey, TValue> item)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenDictionary.Contains(item);
+        }
+        finally
+        {
+            _lock.EnterReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.CopyTo(KeyValuePair{TKey, TValue}[], int)"/>
@@ -283,7 +413,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <param name="array"></param>
     /// <param name="arrayIndex"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) => _frozenDictionary.CopyTo(array, arrayIndex);
+    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            _frozenDictionary.CopyTo(array, arrayIndex);
+        }
+        finally
+        {
+            _lock.EnterReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="Dictionary{TKey, TValue}.Remove(TKey)"/>
@@ -293,7 +434,8 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(TKey key)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             if (_dictionary.Remove(key))
             {
@@ -301,6 +443,10 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
                 return true;
             }
             return false;
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -312,10 +458,32 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// </summary>
     /// <returns><inheritdoc cref="FrozenDictionary{TKey, TValue}.GetEnumerator()"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _frozenDictionary.GetEnumerator();
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenDictionary.GetEnumerator();
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    IEnumerator IEnumerable.GetEnumerator() => _frozenDictionary.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenDictionary.GetEnumerator();
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region IDictionary<TKey, TValue>
@@ -329,10 +497,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(TKey key, TValue value)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _dictionary.Add(key, value);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -342,7 +515,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <param name="key">The key to check for.</param>
     /// <returns><inheritdoc cref="FrozenDictionary{TKey, TValue}.ContainsKey(TKey)"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ContainsKey(TKey key) => _frozenDictionary.ContainsKey(key);
+    public bool ContainsKey(TKey key)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenDictionary.ContainsKey(key);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="FrozenDictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/>
@@ -351,7 +535,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     /// <param name="value">The value.</param>
     /// <returns><inheritdoc cref="FrozenDictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => _frozenDictionary.TryGetValue(key, out value);
+    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenDictionary.TryGetValue(key, out value);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region IReadOnlyDictionary<TKey, TValue>
@@ -361,7 +556,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public ICollection<TKey> Keys
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Keys;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Keys;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     /// <summary>
@@ -370,19 +576,52 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public ICollection<TValue> Values
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Values;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Values;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Keys;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Keys;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Values;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Values;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     /// <summary>
@@ -394,16 +633,33 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     public TValue this[TKey key]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary[key];
+
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary[key];
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ArgumentNullException.ThrowIfNull(key);
 
-            lock (_lock)
+            _lock.EnterWriteLock();
+            try
             {
                 _dictionary[key] = value;
                 Freeze();
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
             }
         }
     }
@@ -414,7 +670,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
 
     object ICollection.SyncRoot => this;
 
-    void ICollection.CopyTo(Array array, int index) => ((IDictionary)_frozenDictionary).CopyTo(array, index);
+    void ICollection.CopyTo(Array array, int index)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            ((IDictionary)_frozenDictionary).CopyTo(array, index);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region IDictionary
@@ -425,13 +692,35 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     ICollection IDictionary.Keys
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Keys;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Keys;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     ICollection IDictionary.Values
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenDictionary.Values;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenDictionary.Values;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     object? IDictionary.this[object key]
@@ -441,7 +730,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         {
             if (IsCompatibleKey(key))
             {
-                return _frozenDictionary.TryGetValue((TKey)key, out var value) ? value : null;
+                _lock.EnterReadLock();
+                try
+                {
+                    return _frozenDictionary.TryGetValue((TKey)key, out var value) ? value : null;
+                }
+                finally
+                {
+                    _lock.ExitReadLock();
+                }
             }
 
             return null;
@@ -458,6 +755,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
             try
             {
                 TKey tempKey = (TKey)key;
+                _lock.EnterWriteLock();
                 try
                 {
                     this[tempKey] = (TValue)value!;
@@ -465,6 +763,10 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
                 catch (InvalidCastException)
                 {
                     throw new ArgumentException(value!.ToString(), typeof(TValue).FullName);
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
                 }
             }
             catch (InvalidCastException)
@@ -482,6 +784,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         try
         {
             TKey tempKey = (TKey)key;
+            _lock.EnterWriteLock();
             try
             {
                 this[tempKey] = (TValue)value!;
@@ -489,6 +792,10 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
             catch (InvalidCastException)
             {
                 throw new ArgumentException(value!.ToString(), typeof(TValue).FullName);
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
             }
         }
         catch (InvalidCastException)
@@ -509,7 +816,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    IDictionaryEnumerator IDictionary.GetEnumerator() => _dictionary.GetEnumerator();
+    IDictionaryEnumerator IDictionary.GetEnumerator()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _dictionary.GetEnumerator();
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }        
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IDictionary.Remove(object key)
@@ -532,7 +850,18 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetObjectData(SerializationInfo info, StreamingContext context) => _dictionary.GetObjectData(info, context);
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            _dictionary.GetObjectData(info, context);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region IDeserializationCallback
@@ -543,10 +872,15 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnDeserialization(object? sender)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _dictionary.OnDeserialization(sender);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
     #endregion

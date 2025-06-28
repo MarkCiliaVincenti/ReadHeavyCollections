@@ -21,7 +21,7 @@ namespace ReadHeavyCollections;
 [Serializable]
 public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerable, IReadOnlyCollection<T>, ISet<T>, ICollection, IReadOnlySet<T>, ISerializable, IDeserializationCallback
 {
-    private readonly Lock _lock = new();
+    private readonly ReaderWriterLockSlim _lock = new();
     private FrozenSet<T> _frozenSet;
     private readonly HashSet<T> _hashSet;
     private readonly bool _isComparerSet;
@@ -115,7 +115,8 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     {
         if (items.Any())
         {
-            lock (_lock)
+            _lock.EnterWriteLock();
+            try
             {
                 bool added = false;
                 foreach (var item in items)
@@ -129,6 +130,10 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
                 {
                     Freeze();
                 }
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
             }
         }
     }
@@ -150,7 +155,18 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _frozenSet.Count;
+        get
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                return _frozenSet.Count;
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
     }
 
     bool ICollection<T>.IsReadOnly => false;
@@ -163,7 +179,8 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Add(T item)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             if (_hashSet.Add(item))
             {
@@ -171,6 +188,10 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
                 return true;
             }
             return false;
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -190,10 +211,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _hashSet.Clear();
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -203,7 +229,18 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <param name="item"></param>
     /// <returns><inheritdoc cref="FrozenSet{T}.Contains(T)"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(T item) => _frozenSet.Contains(item);
+    public bool Contains(T item)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.Contains(item);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="FrozenSet{T}.CopyTo(T[], int)"/>
@@ -211,7 +248,18 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <param name="array"></param>
     /// <param name="arrayIndex"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CopyTo(T[] array, int arrayIndex) => _frozenSet.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            _frozenSet.CopyTo(array, arrayIndex);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     /// <summary>
     /// <inheritdoc cref="HashSet{T}.Remove(T)"/>
@@ -222,15 +270,20 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     public bool Remove(T item)
     {
         bool removed;
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             removed = _hashSet.Remove(item);
             if (removed)
             {
                 Freeze();
             }
+            return removed;
         }
-        return removed;
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
     }
 
     /// <summary>
@@ -238,10 +291,32 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <returns><inheritdoc cref="FrozenSet{T}.GetEnumerator"/></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerator<T> GetEnumerator() => _frozenSet.GetEnumerator();
+    public IEnumerator<T> GetEnumerator()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.GetEnumerator();
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    IEnumerator IEnumerable.GetEnumerator() => _frozenSet.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.GetEnumerator();
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region ISet<T>
@@ -249,15 +324,20 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     bool ISet<T>.Add(T item)
     {
         bool added;
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             added = _hashSet.Add(item);
             if (added)
             {
                 Freeze();
             }
+            return added;
         }
-        return added;
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
     }
 
     /// <summary>
@@ -267,10 +347,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ExceptWith(IEnumerable<T> other)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _hashSet.ExceptWith(other);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -281,10 +366,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void IntersectWith(IEnumerable<T> other)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _hashSet.IntersectWith(other);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -296,7 +386,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsProperSubsetOf(IEnumerable<T> other)
     {
-        return _frozenSet.IsProperSubsetOf(other);
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.IsProperSubsetOf(other);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
 
     /// <summary>
@@ -307,7 +405,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsProperSupersetOf(IEnumerable<T> other)
     {
-        return _frozenSet.IsProperSupersetOf(other);
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.IsProperSupersetOf(other);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
 
     /// <summary>
@@ -318,7 +424,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSubsetOf(IEnumerable<T> other)
     {
-        return _frozenSet.IsSubsetOf(other);
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.IsSubsetOf(other);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
 
     /// <summary>
@@ -329,7 +443,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSupersetOf(IEnumerable<T> other)
     {
-        return _frozenSet.IsSupersetOf(other);
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.IsSupersetOf(other);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
 
     /// <summary>
@@ -340,7 +462,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Overlaps(IEnumerable<T> other)
     {
-        return _frozenSet.Overlaps(other);
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.Overlaps(other);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
 
     /// <summary>
@@ -351,7 +481,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool SetEquals(IEnumerable<T> other)
     {
-        return _frozenSet.SetEquals(other);
+        _lock.EnterReadLock();
+        try
+        {
+            return _frozenSet.SetEquals(other);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
 
     /// <summary>
@@ -361,10 +499,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SymmetricExceptWith(IEnumerable<T> other)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _hashSet.SymmetricExceptWith(other);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
 
@@ -375,10 +518,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void UnionWith(IEnumerable<T> other)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _hashSet.UnionWith(other);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
     #endregion
@@ -391,7 +539,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ICollection.CopyTo(Array array, int index)
     {
-        ((ICollection)_frozenSet).CopyTo(array, index);
+        _lock.EnterReadLock();
+        try
+        {
+            ((ICollection)_frozenSet).CopyTo(array, index);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
     }
     #endregion
 
@@ -406,7 +562,18 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void GetObjectData(SerializationInfo info, StreamingContext context) => _hashSet.GetObjectData(info, context);
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        _lock.EnterReadLock();
+        try
+        {
+            _hashSet.GetObjectData(info, context);
+        }
+        finally
+        {
+            _lock.ExitReadLock();
+        }
+    }
     #endregion
 
     #region IDeserializationCallback
@@ -417,10 +584,15 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnDeserialization(object? sender)
     {
-        lock (_lock)
+        _lock.EnterWriteLock();
+        try
         {
             _hashSet.OnDeserialization(sender);
             Freeze();
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
         }
     }
     #endregion
