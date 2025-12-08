@@ -330,4 +330,22 @@ public class ReadHeavySetTests
         set.AddRange(readOnlyCollection);
         set.Count.Should().Be(2);
     }
+
+    [Fact]
+    public void AddRange_On_Empty_ReadOnlyCollection_Should_Work_Correctly()
+    {
+        var set = new ReadHeavySet<int>();
+        var readOnlyCollection = new MyReadOnlyCollection<int>(new int[] { });
+        set.AddRange(readOnlyCollection);
+        set.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void AddRange_On_Empty_Collection_Should_Work_Correctly()
+    {
+        var set = new ReadHeavySet<int>();
+        var collection = new int[] { };
+        set.AddRange(collection);
+        set.Count.Should().Be(0);
+    }
 }

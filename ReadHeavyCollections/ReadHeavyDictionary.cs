@@ -112,11 +112,21 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
         {
             if (items is ICollection<KeyValuePair<TKey, TValue>> coll)
             {
-                _dictionary.EnsureCapacity(_dictionary.Count + coll.Count);
+                var count = coll.Count;
+                if (coll.Count == 0)
+                {
+                    return;
+                }
+                _dictionary.EnsureCapacity(_dictionary.Count + count);
             }
             else if (items is IReadOnlyCollection<KeyValuePair<TKey, TValue>> roColl)
             {
-                _dictionary.EnsureCapacity(_dictionary.Count + roColl.Count);
+                var count = roColl.Count;
+                if (roColl.Count == 0)
+                {
+                    return;
+                }
+                _dictionary.EnsureCapacity(_dictionary.Count + count);
             }
 
             bool addedAny = false;

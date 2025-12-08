@@ -702,6 +702,24 @@ public class ReadHeavyDictionaryTests
     }
 
     [Fact]
+    public void AddRange_On_Empty_MyReadOnlyCollection_Should_Work_Correctly()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var readOnlyCollection = new MyReadOnlyCollection<string, int>(new KeyValuePair<string, int>[] { });
+        dict.AddRange(readOnlyCollection);
+        dict.Count.Should().Be(0);
+    }
+
+    [Fact]
+    public void AddRange_On_Empty_Collection_Should_Work_Correctly()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var collection = new KeyValuePair<string, int>[] { };
+        dict.AddRange(collection);
+        dict.Count.Should().Be(0);
+    }
+
+    [Fact]
     public void AddRange_On_IEnumerable_Should_Work_Correctly()
     {
         var dict = new ReadHeavyDictionary<string, int>();
