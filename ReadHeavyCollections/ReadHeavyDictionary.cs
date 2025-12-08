@@ -113,7 +113,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
             if (items is ICollection<KeyValuePair<TKey, TValue>> coll)
             {
                 var count = coll.Count;
-                if (coll.Count == 0)
+                if (count == 0)
                 {
                     return;
                 }
@@ -122,7 +122,7 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
             else if (items is IReadOnlyCollection<KeyValuePair<TKey, TValue>> roColl)
             {
                 var count = roColl.Count;
-                if (roColl.Count == 0)
+                if (count == 0)
                 {
                     return;
                 }
