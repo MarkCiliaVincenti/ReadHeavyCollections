@@ -628,7 +628,7 @@ public class ReadHeavyDictionaryTests
         while (enumerator.MoveNext())
         {
             if (enumerator.Current is DictionaryEntry de)
-                items.Add(new KeyValuePair<string, int>((string)de.Key, (int)de.Value));
+                items.Add(new KeyValuePair<string, int>((string)de.Key, (int)de.Value!));
             else if (enumerator.Current is KeyValuePair<string, int> kvp)
                 items.Add(kvp);
         }
@@ -649,7 +649,7 @@ public class ReadHeavyDictionaryTests
     public void IndexerSet_ShouldAllowNull_ForReferenceType()
     {
         var dict = new ReadHeavyDictionary<string, string>();
-        dict["foo"] = null;
+        dict["foo"] = null!;
         dict["foo"].Should().BeNull();
     }
 }

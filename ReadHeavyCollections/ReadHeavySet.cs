@@ -31,7 +31,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <summary>
     /// Creates an empty <see cref="ReadHeavySet{T}"/>.
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavySet()
     {
         _isComparerSet = false;
@@ -43,7 +42,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// Creates a <see cref="ReadHeavySet{T}"/> with the specified input sequence.
     /// </summary>
     /// <param name="collection">An input sequence.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavySet(IEnumerable<T> collection)
     {
         _isComparerSet = false;
@@ -55,7 +53,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// Creates an empty <see cref="ReadHeavySet{T}"/> with the provided comparer.
     /// </summary>
     /// <param name="comparer">The comparer.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavySet(IEqualityComparer<T> comparer)
     {
         _isComparerSet = true;
@@ -68,7 +65,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// Creates a <see cref="ReadHeavySet{T}"/> from the provided set.
     /// </summary>
     /// <param name="set">The set.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavySet(ISet<T> set)
     {
         _isComparerSet = false;
@@ -81,7 +77,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="collection">An input sequence.</param>
     /// <param name="comparer">The comparer.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavySet(IEnumerable<T> collection, IEqualityComparer<T> comparer)
     {
         _isComparerSet = true;
@@ -95,7 +90,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="set">The input sequence.</param>
     /// <param name="comparer">The comparer.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ReadHeavySet(ISet<T> set, IEqualityComparer<T> comparer)
     {
         _isComparerSet = true;
@@ -110,25 +104,45 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// Adds multiple entries to the <see cref="ReadHeavySet{T}"/> in a more optimal way than multiple <see cref="ReadHeavySet{T}.Add(T)"/> calls.
     /// </summary>
     /// <param name="items">An input sequence to add to the set.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(IEnumerable<T> items)
     {
-        if (items.Any())
+        ArgumentNullException.ThrowIfNull(items);
+
+        using var e = items.GetEnumerator();
+        if (!e.MoveNext())
         {
-            lock (_lock)
+            return;
+        }
+
+        if (items is ICollection<T> coll)
+        {
+            _hashSet.EnsureCapacity(_hashSet.Count + coll.Count);
+        }
+        else if (items is IReadOnlyCollection<T> roColl)
+        {
+            _hashSet.EnsureCapacity(_hashSet.Count + roColl.Count);
+        }
+
+        lock (_lock)
+        {
+            bool added = false;
+
+            if (_hashSet.Add(e.Current))
             {
-                bool added = false;
-                foreach (var item in items)
+                added = true;
+            }
+
+            while (e.MoveNext())
+            {
+                if (_hashSet.Add(e.Current))
                 {
-                    if (_hashSet.Add(item))
-                    {
-                        added = true;
-                    }
+                    added = true;
                 }
-                if (added)
-                {
-                    Freeze();
-                }
+            }
+
+            if (added)
+            {
+                Freeze();
             }
         }
     }
@@ -136,10 +150,13 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
 
     #region HelperMethods
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void Freeze()
     {
-        _frozenSet = (_isComparerSet) ? _hashSet.ToFrozenSet(_comparer) : _hashSet.ToFrozenSet();
+        var frozen = _isComparerSet
+            ? _hashSet.ToFrozenSet(_comparer)
+            : _hashSet.ToFrozenSet();
+
+        Volatile.Write(ref _frozenSet, frozen);
     }
     #endregion
 
@@ -160,7 +177,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="item"></param>
     /// <returns><inheritdoc cref="HashSet{T}.Add(T)"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Add(T item)
     {
         lock (_lock)
@@ -178,22 +194,21 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <inheritdoc cref="HashSet{T}.Add(T)"/>
     /// </summary>
     /// <param name="item"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Add(T item)
-    {
-        Add(item);
-    }
+    void ICollection<T>.Add(T item) => Add(item);
 
     /// <summary>
     /// <inheritdoc cref="HashSet{T}.Clear"/>
     /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear()
     {
         lock (_lock)
         {
-            _hashSet.Clear();
-            Freeze();
+            var wasNotEmpty = _hashSet.Count > 0;
+            if (wasNotEmpty)
+            {
+                _hashSet.Clear();
+                Freeze();
+            }
         }
     }
 
@@ -210,7 +225,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="array"></param>
     /// <param name="arrayIndex"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CopyTo(T[] array, int arrayIndex) => _frozenSet.CopyTo(array, arrayIndex);
 
     /// <summary>
@@ -218,7 +232,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="item"></param>
     /// <returns><inheritdoc cref="HashSet{T}.Remove(T)"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(T item)
     {
         bool removed;
@@ -245,7 +258,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     #endregion
 
     #region ISet<T>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     bool ISet<T>.Add(T item)
     {
         bool added;
@@ -264,7 +276,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <inheritdoc cref="HashSet{T}.ExceptWith(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ExceptWith(IEnumerable<T> other)
     {
         lock (_lock)
@@ -278,7 +289,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <inheritdoc cref="HashSet{T}.IntersectWith(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void IntersectWith(IEnumerable<T> other)
     {
         lock (_lock)
@@ -293,72 +303,47 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// </summary>
     /// <param name="other"></param>
     /// <returns><inheritdoc cref="HashSet{T}.IsProperSubsetOf(IEnumerable{T})"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsProperSubsetOf(IEnumerable<T> other)
-    {
-        return _frozenSet.IsProperSubsetOf(other);
-    }
+    public bool IsProperSubsetOf(IEnumerable<T> other) => _frozenSet.IsProperSubsetOf(other);
 
     /// <summary>
     /// <inheritdoc cref="HashSet{T}.IsProperSupersetOf(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
     /// <returns><inheritdoc cref="HashSet{T}.IsProperSupersetOf(IEnumerable{T})"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsProperSupersetOf(IEnumerable<T> other)
-    {
-        return _frozenSet.IsProperSupersetOf(other);
-    }
+    public bool IsProperSupersetOf(IEnumerable<T> other) => _frozenSet.IsProperSupersetOf(other);
 
     /// <summary>
     /// <inheritdoc cref="HashSet{T}.IsSubsetOf(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
     /// <returns><inheritdoc cref="HashSet{T}.IsSubsetOf(IEnumerable{T})"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSubsetOf(IEnumerable<T> other)
-    {
-        return _frozenSet.IsSubsetOf(other);
-    }
+    public bool IsSubsetOf(IEnumerable<T> other) => _frozenSet.IsSubsetOf(other);
 
     /// <summary>
     /// <inheritdoc cref="HashSet{T}.IsSupersetOf(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
     /// <returns><inheritdoc cref="HashSet{T}.IsSupersetOf(IEnumerable{T})"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSupersetOf(IEnumerable<T> other)
-    {
-        return _frozenSet.IsSupersetOf(other);
-    }
+    public bool IsSupersetOf(IEnumerable<T> other) => _frozenSet.IsSupersetOf(other);
 
     /// <summary>
     /// <inheritdoc cref="FrozenSet{T}.Overlaps(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
     /// <returns><inheritdoc cref="FrozenSet{T}.Overlaps(IEnumerable{T})"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Overlaps(IEnumerable<T> other)
-    {
-        return _frozenSet.Overlaps(other);
-    }
+    public bool Overlaps(IEnumerable<T> other) => _frozenSet.Overlaps(other);
 
     /// <summary>
     /// <inheritdoc cref="FrozenSet{T}.SetEquals(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
     /// <returns><inheritdoc cref="FrozenSet{T}.SetEquals(IEnumerable{T})"/></returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool SetEquals(IEnumerable<T> other)
-    {
-        return _frozenSet.SetEquals(other);
-    }
+    public bool SetEquals(IEnumerable<T> other) => _frozenSet.SetEquals(other);
 
     /// <summary>
     /// <inheritdoc cref="HashSet{T}.SymmetricExceptWith(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SymmetricExceptWith(IEnumerable<T> other)
     {
         lock (_lock)
@@ -372,7 +357,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <inheritdoc cref="HashSet{T}.UnionWith(IEnumerable{T})"/>
     /// </summary>
     /// <param name="other"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void UnionWith(IEnumerable<T> other)
     {
         lock (_lock)
@@ -388,11 +372,7 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
 
     object ICollection.SyncRoot => this;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection.CopyTo(Array array, int index)
-    {
-        ((ICollection)_frozenSet).CopyTo(array, index);
-    }
+    void ICollection.CopyTo(Array array, int index) => ((ICollection)_frozenSet).CopyTo(array, index);
     #endregion
 
     #region ISerializable
@@ -405,7 +385,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
     [EditorBrowsable(EditorBrowsableState.Never)]
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void GetObjectData(SerializationInfo info, StreamingContext context) => _hashSet.GetObjectData(info, context);
     #endregion
 
@@ -414,7 +393,6 @@ public sealed class ReadHeavySet<T> : ICollection<T>, IEnumerable<T>, IEnumerabl
     /// <inheritdoc />
     /// </summary>
     /// <param name="sender"><inheritdoc /></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void OnDeserialization(object? sender)
     {
         lock (_lock)

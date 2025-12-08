@@ -119,11 +119,16 @@ public sealed class ReadHeavyDictionary<TKey, TValue> : ICollection<KeyValuePair
                 _dictionary.EnsureCapacity(_dictionary.Count + roColl.Count);
             }
 
+            bool addedAny = false;
             foreach (var item in items)
             {
+                addedAny = true;
                 _dictionary.Add(item.Key, item.Value);
             }
-            Freeze();
+            if (addedAny)
+            {
+                Freeze();
+            }
         }
     }
 
