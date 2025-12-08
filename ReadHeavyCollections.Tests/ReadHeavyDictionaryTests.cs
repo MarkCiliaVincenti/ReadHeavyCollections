@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using System.Collections;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using Xunit;
@@ -664,10 +666,32 @@ public class ReadHeavyDictionaryTests
     }
 
     [Fact]
-    public void AddRange_On_ReadOnlyCollection_Should_Work_Correctly()
+    public void Updating_Same_Key_To_Different_Value_Should_Work_Correctly()
     {
         var dict = new ReadHeavyDictionary<string, int>();
-        var readOnlyCollection = Array.AsReadOnly(new[]
+        dict["key"] = 1;
+        dict["key"] = 2;
+        dict["key"].Should().Be(2);
+        dict.Count.Should().Be(1);
+    }
+
+    private class MyReadOnlyCollection<TKey, TValue> : IReadOnlyCollection<KeyValuePair<TKey, TValue>>
+    {
+        private readonly List<KeyValuePair<TKey, TValue>> _items;
+        public MyReadOnlyCollection(IEnumerable<KeyValuePair<TKey, TValue>> items)
+        {
+            _items = [.. items];
+        }
+        public int Count => _items.Count;
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
+    }
+
+    [Fact]
+    public void AddRange_On_MyReadOnlyCollection_Should_Work_Correctly()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var readOnlyCollection = new MyReadOnlyCollection<string, int>(new[]
         {
             new KeyValuePair<string, int>("key1", 1),
             new KeyValuePair<string, int>("key2", 2)

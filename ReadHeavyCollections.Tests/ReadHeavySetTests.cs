@@ -1,4 +1,5 @@
 using FluentAssertions;
+using System.Collections;
 using Xunit;
 
 namespace ReadHeavyCollections.Tests;
@@ -304,11 +305,24 @@ public class ReadHeavySetTests
         array.Should().HaveCount(2);
     }
 
+    private class MyReadOnlyCollection<T> : IReadOnlyCollection<T>
+    {
+        private readonly List<T> _items;
+        public MyReadOnlyCollection(IEnumerable<T> items)
+        {
+            _items = [.. items];
+        }
+        public int Count => _items.Count;
+        public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
     [Fact]
     public void AddRange_On_ReadOnlyCollection_Should_Work_Correctly()
     {
         var set = new ReadHeavySet<int>();
-        var readOnlyCollection = Array.AsReadOnly(new[]
+        var readOnlyCollection = new MyReadOnlyCollection<int>(new[]
         {
             1, 2
         });
