@@ -652,4 +652,42 @@ public class ReadHeavyDictionaryTests
         dict["foo"] = null!;
         dict["foo"].Should().BeNull();
     }
+
+    [Fact]
+    public void Updating_Same_Key_Should_Work_Correctly()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        dict["key"] = 1;
+        dict["key"] = 1;
+        dict["key"].Should().Be(1);
+        dict.Count.Should().Be(1);
+    }
+
+    [Fact]
+    public void AddRange_On_ReadOnlyCollection_Should_Work_Correctly()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var readOnlyCollection = Array.AsReadOnly(new[]
+        {
+            new KeyValuePair<string, int>("key1", 1),
+            new KeyValuePair<string, int>("key2", 2)
+        });
+
+        dict.AddRange(readOnlyCollection);
+        dict.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public void AddRange_On_IEnumerable_Should_Work_Correctly()
+    {
+        var dict = new ReadHeavyDictionary<string, int>();
+        var iEnumerable = new List<KeyValuePair<string, int>>
+        {
+            new KeyValuePair<string, int>("key1", 1),
+            new KeyValuePair<string, int>("key2", 2)
+        }.AsEnumerable();
+
+        dict.AddRange(iEnumerable);
+        dict.Count.Should().Be(2);
+    }
 }

@@ -303,4 +303,17 @@ public class ReadHeavySetTests
         array.Should().Contain(2);
         array.Should().HaveCount(2);
     }
+
+    [Fact]
+    public void AddRange_On_ReadOnlyCollection_Should_Work_Correctly()
+    {
+        var set = new ReadHeavySet<int>();
+        var readOnlyCollection = Array.AsReadOnly(new[]
+        {
+            1, 2
+        });
+
+        set.AddRange(readOnlyCollection);
+        set.Count.Should().Be(2);
+    }
 }
