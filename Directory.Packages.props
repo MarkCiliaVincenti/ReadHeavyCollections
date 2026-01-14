@@ -7,7 +7,7 @@
     <SystemCollectionsImmutableVersion>8.0.0</SystemCollectionsImmutableVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
-    <SystemCollectionsImmutableVersion>10.0.0</SystemCollectionsImmutableVersion>
+    <SystemCollectionsImmutableVersion>10.0.2</SystemCollectionsImmutableVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.5" />
