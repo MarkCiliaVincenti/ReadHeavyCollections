@@ -3,6 +3,7 @@
     <File Path=".github/workflows/dotnet.yml" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
     <File Path="Versions.props" />
   </Folder>
   <Project Path="Benchmarks/Benchmarks.csproj" />

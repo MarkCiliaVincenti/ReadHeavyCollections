@@ -7,16 +7,16 @@
 		<PackageProjectUrl>https://github.com/MarkCiliaVincenti/ReadHeavyCollections</PackageProjectUrl>
 		<Copyright>MIT</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Version>1.0.6</Version>
+		<Version>1.0.7</Version>
 		<PackageIcon>logo.png</PackageIcon>
-		<PackageReleaseNotes>Dependency update.</PackageReleaseNotes>
+		<PackageReleaseNotes>Enforcing consistent SDK version for total reproducible builds.</PackageReleaseNotes>
 		<Description>A dictionary and a set that offer very fast read speed in expense of slow write speed. Ideal in situations where the collection is infrequently updated but is very often read from.</Description>
 		<Copyright>© 2026 Mark Cilia Vincenti</Copyright>
 		<PackageTags>dictionary,set,hashset,read,heavy,fast</PackageTags>
 		<RepositoryType>git</RepositoryType>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<AssemblyVersion>1.0.6.0</AssemblyVersion>
-		<FileVersion>1.0.6.0</FileVersion>
+		<AssemblyVersion>1.0.7.0</AssemblyVersion>
+		<FileVersion>1.0.7.0</FileVersion>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Nullable>enable</Nullable>
 		<IsPackable>true</IsPackable>
