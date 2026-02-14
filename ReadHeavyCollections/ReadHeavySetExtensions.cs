@@ -12,20 +12,23 @@ public static class ReadHeavySet
     /// <param name="source">The values to use to populate the set.</param>
     /// <typeparam name="T">The type of the values in the set.</typeparam>
     /// <returns>A ReadHeavy set.</returns>
-    public static ReadHeavySet<T> Create<T>(params ReadOnlySpan<T> source) => source.ToArray().ToReadHeavySet();
+    public static ReadHeavySet<T> Create<T>(params ReadOnlySpan<T> source)
+        => source.ToArray().ToReadHeavySet();
 
     /// <summary>Creates a <see cref="ReadHeavySet{T}"/> with the specified values.</summary>
     /// <param name="source">The values to use to populate the set.</param>
     /// <param name="equalityComparer">The comparer implementation to use to compare values for equality. If null, <see cref="EqualityComparer{T}.Default"/> is used.</param>
     /// <typeparam name="T">The type of the values in the set.</typeparam>
     /// <returns>A ReadHeavy set.</returns>
-    public static ReadHeavySet<T> Create<T>(IEqualityComparer<T>? equalityComparer, params ReadOnlySpan<T> source) => source.ToArray().ToReadHeavySet(equalityComparer);
+    public static ReadHeavySet<T> Create<T>(IEqualityComparer<T>? equalityComparer, params ReadOnlySpan<T> source)
+        => source.ToArray().ToReadHeavySet(equalityComparer);
 
-    /// <summary>Creates a <see cref="ReadHeavySet{T}"/> with the specified values.</summary>
-    /// <param name="source">The values to use to populate the set.</param>
-    /// <param name="comparer">The comparer implementation to use to compare values for equality. If null, <see cref="EqualityComparer{T}.Default"/> is used.</param>
-    /// <typeparam name="T">The type of the values in the set.</typeparam>
-    /// <returns>A ReadHeavy set.</returns>
-    public static ReadHeavySet<T> ToReadHeavySet<T>(this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
-        (comparer is null) ? new ReadHeavySet<T>(source) : new ReadHeavySet<T>(source, comparer);
+    extension<T>(IEnumerable<T> source)
+    {
+        /// <summary>Creates a <see cref="ReadHeavySet{T}"/> with the specified values.</summary>
+        /// <param name="comparer">The comparer implementation to use to compare values for equality. If null, <see cref="EqualityComparer{T}.Default"/> is used.</param>
+        /// <returns>A ReadHeavy set.</returns>
+        public ReadHeavySet<T> ToReadHeavySet(IEqualityComparer<T>? comparer = null)
+            => (comparer is null) ? new(source) : new(source, comparer);
+    }
 }
