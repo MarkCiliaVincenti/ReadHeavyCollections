@@ -6,7 +6,7 @@ using System.Collections.Frozen;
 namespace Benchmarks;
 
 [MemoryDiagnoser]
-internal class SynchronousReadsIntegers
+public class SynchronousReadsIntegers
 {
     [Params(10, 100, 1000, 10000, 100_000, 1_000_000)]
     public int Size;
