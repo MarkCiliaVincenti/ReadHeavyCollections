@@ -1,6 +1,7 @@
-using FluentAssertions;
 using System.Collections;
+using System.Globalization;
 using System.Runtime.Serialization;
+using FluentAssertions;
 using Xunit;
 
 namespace ReadHeavyCollections.Tests;
@@ -202,12 +203,12 @@ public class ReadHeavyDictionaryTests
     {
         var dict = new ReadHeavyDictionary<int, string>();
         for (int i = 0; i < 1000; i++)
-            dict[i] = i.ToString();
+            dict[i] = i.ToString(NumberFormatInfo.InvariantInfo);
 
         Parallel.For(0, 1000, i =>
         {
             dict.TryGetValue(i, out var val).Should().BeTrue();
-            val.Should().Be(i.ToString());
+            val.Should().Be(i.ToString(NumberFormatInfo.InvariantInfo));
         });
     }
 
@@ -341,7 +342,7 @@ public class ReadHeavyDictionaryTests
 
         {
             var source = new List<int>() { 1 };
-            var keySelector = new Func<int, string>(i => i.ToString());
+            var keySelector = new Func<int, string>(i => i.ToString(NumberFormatInfo.InvariantInfo));
 
             var dictionary = source.ToDictionary(keySelector);
             var heavyDict = source.ToReadHeavyDictionary(keySelector);
@@ -355,7 +356,7 @@ public class ReadHeavyDictionaryTests
         }
         {
             var source = new List<int>() { 1 };
-            var keySelector = new Func<int, string>(i => i.ToString());
+            var keySelector = new Func<int, string>(i => i.ToString(NumberFormatInfo.InvariantInfo));
             var elementSelector = new Func<int, int>(i => i + 1);
 
             var dictionary = source.ToDictionary(keySelector, elementSelector);

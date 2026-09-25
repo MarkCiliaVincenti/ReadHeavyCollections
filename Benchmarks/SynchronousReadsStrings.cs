@@ -1,7 +1,8 @@
-﻿using BenchmarkDotNet.Attributes;
-using ReadHeavyCollections;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
+using System.Globalization;
+using BenchmarkDotNet.Attributes;
+using ReadHeavyCollections;
 
 namespace Benchmarks;
 
@@ -30,13 +31,13 @@ public class SynchronousReadsStrings
             string key;
             do
             {
-                key = random.Next().ToString();
+                key = random.Next().ToString(NumberFormatInfo.InvariantInfo);
             } while (uniqueKeys.Contains(key));
 
             uniqueKeys.Add(key);
         }
 
-        _dictionary = uniqueKeys.Select((key, idx) => (key, idx)).ToDictionary(e => e.key, e => e.idx.ToString());
+        _dictionary = uniqueKeys.Select((key, idx) => (key, idx)).ToDictionary(e => e.key, e => e.idx.ToString(NumberFormatInfo.InvariantInfo));
         _concurrentDictionary = new(_dictionary);
         _frozenDictionary = _dictionary.ToFrozenDictionary();
         _readHeavyDictionary = new(_dictionary);

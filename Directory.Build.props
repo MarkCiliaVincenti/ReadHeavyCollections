@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="Sdk.props" Sdk="FrameworkCompatibleVersions" />
   <PropertyGroup>
 	  <LangVersion>latest</LangVersion>
 	  <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>

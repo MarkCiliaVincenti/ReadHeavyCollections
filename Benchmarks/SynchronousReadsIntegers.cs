@@ -1,4 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Attributes;
 using ReadHeavyCollections;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
@@ -6,7 +6,7 @@ using System.Collections.Frozen;
 namespace Benchmarks;
 
 [MemoryDiagnoser]
-public class SynchronousReadsIntegers
+internal class SynchronousReadsIntegers
 {
     [Params(10, 100, 1000, 10000, 100_000, 1_000_000)]
     public int Size;
