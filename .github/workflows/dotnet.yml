@@ -19,10 +19,6 @@ jobs:
       with:
         dotnet-version: 10.0.401
         
-    - name: New global.json
-      run: dotnet new globaljson
-      working-directory: Benchmarks        
-        
     - name: Restore dependencies
       run: dotnet restore
       
@@ -41,7 +37,8 @@ jobs:
     - name: Code Coverage
       uses: codecov/codecov-action@v5
       with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ${{ github.workspace }}/coverage
 
     - name: Run benchmark (net10.0)
       run: dotnet run --framework net10.0 --configuration Release --exporters json --filter '*'
