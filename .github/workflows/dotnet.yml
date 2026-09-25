@@ -30,13 +30,13 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Test .NET 8.0
-      run: dotnet test OpenWeatherMap.Cache.Tests\OpenWeatherMap.Cache.Tests.csproj --framework net8.0 --no-restore --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output net8.0.cobertura.xml --results-directory ${{ github.workspace }}\coverage
+      run: dotnet test ReadHeavyCollections.Tests\ReadHeavyCollections.Tests.csproj --framework net8.0 --no-restore --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output net8.0.cobertura.xml --results-directory ${{ github.workspace }}\coverage
 
     - name: Test .NET 9.0
-      run: dotnet test OpenWeatherMap.Cache.Tests\OpenWeatherMap.Cache.Tests.csproj --framework net9.0 --no-restore --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output net9.0.cobertura.xml --results-directory ${{ github.workspace }}\coverage
+      run: dotnet test ReadHeavyCollections.Tests\ReadHeavyCollections.Tests.csproj --framework net9.0 --no-restore --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output net9.0.cobertura.xml --results-directory ${{ github.workspace }}\coverage
 
     - name: Test .NET 10.0
-      run: dotnet test OpenWeatherMap.Cache.Tests\OpenWeatherMap.Cache.Tests.csproj --framework net10.0 --no-restore --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output net10.0.cobertura.xml --results-directory ${{ github.workspace }}\coverage
+      run: dotnet test ReadHeavyCollections.Tests\ReadHeavyCollections.Tests.csproj --framework net10.0 --no-restore --configuration Release -- --coverage --coverage-output-format cobertura --coverage-output net10.0.cobertura.xml --results-directory ${{ github.workspace }}\coverage
 
     - name: Code Coverage
       uses: codecov/codecov-action@v5
