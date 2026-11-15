@@ -1,15 +1,15 @@
 <Project>
-    <PropertyGroup>
-        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.8" />
-        <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
-        <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
-        <PackageVersion Include="FluentAssertions" Version="8.11.0" />
-        <PackageVersion Include="System.Collections.Immutable" FrameworkCompatibleVersion="true" />
-        <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
-        <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.1" />
-        <PackageVersion Include="xunit.v3" Version="4.0.1" />
-    </ItemGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Backport.System.Threading.Lock" Version="3.1.8" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.16.0-preview.2" />
+    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="2.0.5" />
+    <PackageVersion Include="FluentAssertions" Version="8.11.0" />
+    <PackageVersion Include="System.Collections.Immutable" FrameworkCompatibleVersion="true" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
+  </ItemGroup>
 </Project>
